@@ -6,17 +6,18 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://wangyp.tech">
-  <title>Archives: 2017/6 | 汪祎芃的博客</title>
+  <title>汪祎芃的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="知识管理 思考感悟">
-<meta property="og:type" content="website">
+  <meta name="description" content="Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建本文并不是一个教程，step by step 的教网络上有很多，然而我想说的是：turn to offical guide first!!!，我曾了为了搭建 tensorflow-gpu 的环境参考了很多网络上的教程，失败到吐血，各种莫名其妙的错误，最终发现，目前（2017/9）的 tesorflow-gpu 只支持6.X版本">
+<meta property="og:type" content="article">
 <meta property="og:title" content="汪祎芃的博客">
-<meta property="og:url" content="http://wangyp.tech/archives/2017/06/index.html">
+<meta property="og:url" content="http://wangyp.tech/2017/09/16/tensorflow instruction/index.html">
 <meta property="og:site_name" content="汪祎芃的博客">
-<meta property="og:description" content="知识管理 思考感悟">
+<meta property="og:description" content="Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建本文并不是一个教程，step by step 的教网络上有很多，然而我想说的是：turn to offical guide first!!!，我曾了为了搭建 tensorflow-gpu 的环境参考了很多网络上的教程，失败到吐血，各种莫名其妙的错误，最终发现，目前（2017/9）的 tesorflow-gpu 只支持6.X版本">
+<meta property="og:updated_time" content="2017-09-16T07:15:05.861Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="汪祎芃的博客">
-<meta name="twitter:description" content="知识管理 思考感悟">
+<meta name="twitter:description" content="Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建本文并不是一个教程，step by step 的教网络上有很多，然而我想说的是：turn to offical guide first!!!，我曾了为了搭建 tensorflow-gpu 的环境参考了很多网络上的教程，失败到吐血，各种莫名其妙的错误，最终发现，目前（2017/9）的 tesorflow-gpu 只支持6.X版本">
   
     <link rel="alternative" href="/atom.xml" title="汪祎芃的博客" type="application/atom+xml">
   
@@ -152,49 +153,138 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-tensorflow instruction" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Ubuntu-下-Tensorflow-CUDA-GPU加速-环境搭建"><a href="#Ubuntu-下-Tensorflow-CUDA-GPU加速-环境搭建" class="headerlink" title="Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建"></a>Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建</h1><p>本文并不是一个教程，step by step 的教网络上有很多，然而我想说的是：turn to offical guide first!!!，我曾了为了搭建 tensorflow-gpu 的环境参考了很多网络上的教程，失败到吐血，各种莫名其妙的错误，最终发现，目前（2017/9）的 tesorflow-gpu 只支持6.X版本cuDNN加速库（我错装成了最新版本，虽然是我蠢，但是很少有教程会强调这点），而所有地细节在官方文档中都能找到明确地答案，所以大家不要偷懒，直接去看官方文档吧，我会在下面贴出所有相关地地址。</p>
+<p>因为在 WIN10 上 CUDA 需要 VS2015 运行环境[1]，而我为了开发 UWP 已经安装了 VS2017，所以VS C++ 2015 runtime 一直无法安装，又不想卸载 VS2017，于是就转战 Ubuntu 16.04 LTS 了。</p>
+<p>三步走：</p>
+<ul>
+<li>下载安装 CUDA</li>
+<li>下载安装 cuDNN (虽然是选用加速库，但 Tensorflow 要求必须安装，不然报错)</li>
+<li>安装 tensorflow-gpu</li>
+</ul>
+<p><strong>但要先去看 tensorflow 的官方安装指南，了解整个过程与要求。</strong></p>
+<h4 id="下载安装-CUDA"><a href="#下载安装-CUDA" class="headerlink" title="下载安装 CUDA"></a>下载安装 CUDA</h4><p><a href="http://docs.nvidia.com/cuda/cuda-installation-guide-linux/#axzz4VZnqTJ2A" target="_blank" rel="external">CUDA for Linux 官方文档</a><br><a href="https://developer.nvidia.com/cuda-downloads" target="_blank" rel="external">CUDA 下载地址</a><br>你知道应该选择哪个进行下载</p>
+<h4 id="下载安装-cuDNN"><a href="#下载安装-cuDNN" class="headerlink" title="下载安装 cuDNN"></a>下载安装 cuDNN</h4><p><a href="http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#installlinux" target="_blank" rel="external">cuDNN 官方文档</a><br><a href="https://developer.nvidia.com/rdp/cudnn-download" target="_blank" rel="external">cuDNN 下载地址</a><br>千万不要下载错了</p>
+<h4 id="安装-tensorflow-gpu"><a href="#安装-tensorflow-gpu" class="headerlink" title="安装 tensorflow-gpu"></a>安装 tensorflow-gpu</h4><p><a href="https://www.tensorflow.org/install/" target="_blank" rel="external">tensorflow 官方安装指南</a>(需要翻墙…)<br>另外tensorflow官网下又论坛，可以解决很多实际操作中遇到的问题。</p>
+<p>最后如果你运行并通过了 tensorflow 官方安装指南下的测试程序，看到你的显卡信息，基本上就算是成功了。</p>
+<p>[1] 实际上，后来我又在 WIN10 下尝试搭建环境，虽然 CUDA 在安装的时候警告说找不到支持的编译器 (VS2015)，但依然可以强行安装，最后也可以通过 tensorflow 的测试程序，并且我用 Python 跑了一个 CNN 确实可以加速，难道是因为 anaconda 中自带的 VS2015 runtime… 反正能用就好了</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>Thanks for Your Support!<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
       
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2017" class="archive-year">2017</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/06/25/hello-world/" class="archive-article-date">
-  	<time datetime="2017-06-25T09:51:39.434Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-06-25</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/06/25/hello-world/">Hello World</a>
-    </h1>
-  
+      
 
-        <div class="article-info info-on-right">
-          
-          
+      
 
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://wangyp.tech/2017/09/16/tensorflow instruction/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
-  
-  
-    </div></section>
+
   
 
-    
+
+
+
+  
+  
+  
+  <div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+<script>
+  var cloudTieConfig = {
+    url: "http://wangyp.tech/2017/09/16/tensorflow instruction/", 
+    sourceId: "tensorflow instruction",
+    productKey: "true",
+    target: "cloud-tie-wrapper"
+  };
+</script>
+<script src="//img1.cache.netease.com/f2e/tie/yun/sdk/loader.js"></script>
+  
+
+  
+
+  
 
 
           </div>
@@ -217,8 +307,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
