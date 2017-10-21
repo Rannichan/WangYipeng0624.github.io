@@ -79,7 +79,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="CNN,NLP," />
 
 
 
@@ -95,15 +95,17 @@
 
 
 
-<meta name="description" content="Management of skills and knowledge.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Yipeng&#39;s Blog">
-<meta property="og:url" content="http://wangyp.tech/index.html">
+<meta name="description" content="Tmxmall 平台上有大量的双语句对，大部分句对没有被标注类别，其余的句对虽然被标注了类别，但是不准确，真正被准确标注的句对只占相当少的一部分。Tmxmall 平台上的语料检索、内容分发与路由都依赖于准确的语料类别标注，对于这样的大量的（千万量级）双语句对语料，我考虑利用 CNN 训练出分类器模型，对所有现有的语料数据进行分类，另外可以把分类分类器模型包装成 web 服务，对新增预料数据进行实时">
+<meta name="keywords" content="CNN,NLP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于卷积神经网络（CNN）的专业文本语料分类">
+<meta property="og:url" content="http://wangyp.tech/2017/10/21/professional  text classification based on CNN/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
-<meta property="og:description" content="Management of skills and knowledge.">
+<meta property="og:description" content="Tmxmall 平台上有大量的双语句对，大部分句对没有被标注类别，其余的句对虽然被标注了类别，但是不准确，真正被准确标注的句对只占相当少的一部分。Tmxmall 平台上的语料检索、内容分发与路由都依赖于准确的语料类别标注，对于这样的大量的（千万量级）双语句对语料，我考虑利用 CNN 训练出分类器模型，对所有现有的语料数据进行分类，另外可以把分类分类器模型包装成 web 服务，对新增预料数据进行实时">
+<meta property="og:updated_time" content="2017-10-21T07:49:22.593Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Yipeng&#39;s Blog">
-<meta name="twitter:description" content="Management of skills and knowledge.">
+<meta name="twitter:title" content="基于卷积神经网络（CNN）的专业文本语料分类">
+<meta name="twitter:description" content="Tmxmall 平台上有大量的双语句对，大部分句对没有被标注类别，其余的句对虽然被标注了类别，但是不准确，真正被准确标注的句对只占相当少的一部分。Tmxmall 平台上的语料检索、内容分发与路由都依赖于准确的语料类别标注，对于这样的大量的（千万量级）双语句对语料，我考虑利用 CNN 训练出分类器模型，对所有现有的语料数据进行分类，另外可以把分类分类器模型包装成 web 服务，对新增预料数据进行实时">
 
 
 
@@ -133,13 +135,13 @@
 
 
 
-  <link rel="canonical" href="http://wangyp.tech/"/>
+  <link rel="canonical" href="http://wangyp.tech/2017/10/21/professional  text classification based on CNN/"/>
 
 
 
 
 
-  <title>Yipeng's Blog</title>
+  <title>基于卷积神经网络（CNN）的专业文本语料分类 | Yipeng's Blog</title>
   
 
 
@@ -158,8 +160,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -242,9 +243,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -274,9 +275,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/10/21/professional  text classification based on CNN/" itemprop="url">基于卷积神经网络（CNN）的专业文本语料分类</a></h1>
+          <h1 class="post-title" itemprop="name headline">基于卷积神经网络（CNN）的专业文本语料分类</h1>
         
 
         <div class="post-meta">
@@ -326,9 +325,7 @@
       
 
       
-        
-          
-            <p><a href="https://tmxmall.com/" target="_blank" rel="external">Tmxmall</a> 平台上有大量的双语句对，大部分句对没有被标注类别，其余的句对虽然被标注了类别，但是不准确，真正被准确标注的句对只占相当少的一部分。Tmxmall 平台上的语料检索、内容分发与路由都依赖于准确的语料类别标注，对于这样的大量的（千万量级）双语句对语料，我考虑利用 CNN 训练出分类器模型，对所有现有的语料数据进行分类，另外可以把分类分类器模型包装成 web 服务，对新增预料数据进行实时的分类。</p>
+        <p><a href="https://tmxmall.com/" target="_blank" rel="external">Tmxmall</a> 平台上有大量的双语句对，大部分句对没有被标注类别，其余的句对虽然被标注了类别，但是不准确，真正被准确标注的句对只占相当少的一部分。Tmxmall 平台上的语料检索、内容分发与路由都依赖于准确的语料类别标注，对于这样的大量的（千万量级）双语句对语料，我考虑利用 CNN 训练出分类器模型，对所有现有的语料数据进行分类，另外可以把分类分类器模型包装成 web 服务，对新增预料数据进行实时的分类。</p>
 <h2 id="训练样本收集与预处理"><a href="#训练样本收集与预处理" class="headerlink" title="训练样本收集与预处理"></a>训练样本收集与预处理</h2><h4 id="样本来源"><a href="#样本来源" class="headerlink" title="样本来源"></a>样本来源</h4><p>由于平台上的语料数据专门服务于翻译行业，语料中有相当多的专业词汇，与常见的语料数据库（<a href="http://www.sogou.com/labs/resource/list_news.php" target="_blank" rel="external">搜狗新闻数据库</a>、<a href="http://www.nlpir.org/?action-viewnews-itemid-103" target="_blank" rel="external">复旦新闻数据库</a>等）差异巨大，因此训练所用到的数据均来自于平台上现有数据。</p>
 <h4 id="中英文分离"><a href="#中英文分离" class="headerlink" title="中英文分离"></a>中英文分离</h4><p>目的：将双语文本中的中英文分离，分别训练出一个分类器，这样做可以充分利用双语句对的特性，两个分类器可以相互加强，提高分类器的效果。</p>
 <p>方案：构建若干个字符集合（英文字母/数字集合、英文标点集合、中文标点集合、空格、英文全角字母/数字集合），利用<code>filter()</code>函数很容易将这些集合中的字符从原始文本中去除/保留，从而实现中英文的分离。去除标点也可以利用 jieba 分词器自带的词性标注功能，标点和其他罕见字符都会标注成 X，因此很容易去除，但因为词性标注功能和用户词典加载功能不兼容，最后没有采用。</p>
@@ -368,8 +365,6 @@ corpora.Dictionary.load()
 <p>由于 CNN 要求输入的向量尺寸相同，我们需要对一些长句子进行截短操作，这回导致语句信息的丢失，如果丢失了那些能够决定句子类别的关键词语，这将导致预测分类的结果变差，因此，我们对于对同一个样本，我们将词序打乱，用 CNN 进行多次判断，这样因为截短操作而丢失关键信息的可能性就大大减小了，最后我们可以根据多次判断的结果，综合得出预测的结果（如果一个句子多次被判断为同一类别，我们就确信它属于这个列别，其余的可以被预测为 UNCLEAR）。</p>
 <p>最终，两步优化大大改善了预测结果的可靠性。</p>
 
-          
-        
       
     </div>
     
@@ -384,147 +379,38 @@ corpora.Dictionary.load()
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2017/09/16/tensorflow instruction/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wang Yipeng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yipeng's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/09/16/tensorflow instruction/" itemprop="url">Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-09-16T15:10:48+08:00">
-                2017-09-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/CNN/" rel="tag"># CNN</a>
           
-            
+            <a href="/tags/NLP/" rel="tag"># NLP</a>
           
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>本文并不是一个教程，step by step 的教网络上有很多，然而我想说的是：turn to offical guide first!!!，我曾了为了搭建 tensorflow-gpu 的环境参考了很多网络上的教程，失败到吐血，各种莫名其妙的错误，最终发现，目前（2017/9）的 tesorflow-gpu 只支持6.X版本cuDNN加速库（我错装成了最新版本，虽然是我蠢，但是很少有教程会强调这点），而所有地细节在官方文档中都能找到明确地答案，所以大家不要偷懒，直接去看官方文档吧，我会在下面贴出所有相关地地址。</p>
-<p>因为在 WIN10 上 CUDA 需要 VS2015 运行环境[1]，而我为了开发 UWP 已经安装了 VS2017，所以VS C++ 2015 runtime 一直无法安装，又不想卸载 VS2017，于是就转战 Ubuntu 16.04 LTS 了。</p>
-<p>三步走：</p>
-<ul>
-<li>下载安装 CUDA</li>
-<li>下载安装 cuDNN (虽然是选用加速库，但 Tensorflow 要求必须安装，不然报错)</li>
-<li>安装 tensorflow-gpu</li>
-</ul>
-<p><strong>但要先去看 tensorflow 的官方安装指南，了解整个过程与要求。</strong></p>
-<h4 id="下载安装-CUDA"><a href="#下载安装-CUDA" class="headerlink" title="下载安装 CUDA"></a>下载安装 CUDA</h4><p><a href="http://docs.nvidia.com/cuda/cuda-installation-guide-linux/#axzz4VZnqTJ2A" target="_blank" rel="external">CUDA for Linux 官方文档</a><br><a href="https://developer.nvidia.com/cuda-downloads" target="_blank" rel="external">CUDA 下载地址</a><br>你知道应该选择哪个进行下载</p>
-<h4 id="下载安装-cuDNN"><a href="#下载安装-cuDNN" class="headerlink" title="下载安装 cuDNN"></a>下载安装 cuDNN</h4><p><a href="http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#installlinux" target="_blank" rel="external">cuDNN 官方文档</a><br><a href="https://developer.nvidia.com/rdp/cudnn-download" target="_blank" rel="external">cuDNN 下载地址</a><br>千万不要下载错了</p>
-<h4 id="安装-tensorflow-gpu"><a href="#安装-tensorflow-gpu" class="headerlink" title="安装 tensorflow-gpu"></a>安装 tensorflow-gpu</h4><p><a href="https://www.tensorflow.org/install/" target="_blank" rel="external">tensorflow 官方安装指南</a>(需要翻墙…)<br>另外tensorflow官网下又论坛，可以解决很多实际操作中遇到的问题。</p>
-<p>最后如果你运行并通过了 tensorflow 官方安装指南下的测试程序，看到你的显卡信息，基本上就算是成功了。</p>
-<p>[1] 实际上，后来我又在 WIN10 下尝试搭建环境，虽然 CUDA 在安装的时候警告说找不到支持的编译器 (VS2015)，但依然可以强行安装，最后也可以通过 tensorflow 的测试程序，并且我用 Python 跑了一个 CNN 确实可以加速，难道是因为 anaconda 中自带的 VS2015 runtime… 反正能用就好了</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/16/tensorflow instruction/" rel="next" title="Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建">
+                <i class="fa fa-chevron-left"></i> Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
       
     </footer>
   </div>
@@ -534,10 +420,11 @@ corpora.Dictionary.load()
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -545,6 +432,10 @@ corpora.Dictionary.load()
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -565,8 +456,17 @@ corpora.Dictionary.load()
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           
             <img class="site-author-image" itemprop="image"
@@ -622,6 +522,22 @@ corpora.Dictionary.load()
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#训练样本收集与预处理"><span class="nav-number">1.</span> <span class="nav-text">训练样本收集与预处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#样本来源"><span class="nav-number">1.0.1.</span> <span class="nav-text">样本来源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#中英文分离"><span class="nav-number">1.0.2.</span> <span class="nav-text">中英文分离</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分词"><span class="nav-number">1.0.3.</span> <span class="nav-text">分词</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#停止词过滤"><span class="nav-number">1.0.4.</span> <span class="nav-text">停止词过滤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#训练样本的提纯"><span class="nav-number">1.0.5.</span> <span class="nav-text">训练样本的提纯</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#向量化"><span class="nav-number">1.0.6.</span> <span class="nav-text">向量化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CNN-训练"><span class="nav-number">2.</span> <span class="nav-text">CNN 训练</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CNN-结构"><span class="nav-number">2.0.1.</span> <span class="nav-text">CNN 结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CNN-训练结果"><span class="nav-number">2.0.2.</span> <span class="nav-text">CNN 训练结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#输出预测结果"><span class="nav-number">3.</span> <span class="nav-text">输出预测结果</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
