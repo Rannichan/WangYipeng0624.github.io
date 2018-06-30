@@ -79,7 +79,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Tensorflow,NLP,GAN,RL," />
 
 
 
@@ -95,16 +95,22 @@
 
 
 
-<meta name="description" content="Management of skills and knowledge.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Yipeng&#39;s Blog">
-<meta property="og:url" content="http://wangyp.tech/index.html">
+<meta name="description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一">
+<meta name="keywords" content="Tensorflow,NLP,GAN,RL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用GAN生成对抗网络和RL强化学习手段生成自然语言序列">
+<meta property="og:url" content="http://wangyp.tech/2018/06/29/SeqGAN/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
-<meta property="og:description" content="Management of skills and knowledge.">
+<meta property="og:description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一">
 <meta property="og:locale" content="en">
+<meta property="og:image" content="http://wangyp.tech/2018/06/29/SeqGAN/model_structure.jpg">
+<meta property="og:image" content="http://wangyp.tech/2018/06/29/SeqGAN/generator.jpg">
+<meta property="og:image" content="http://wangyp.tech/2018/06/29/SeqGAN/discriminator.jpg">
+<meta property="og:updated_time" content="2018-06-30T05:06:45.817Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Yipeng&#39;s Blog">
-<meta name="twitter:description" content="Management of skills and knowledge.">
+<meta name="twitter:title" content="用GAN生成对抗网络和RL强化学习手段生成自然语言序列">
+<meta name="twitter:description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一">
+<meta name="twitter:image" content="http://wangyp.tech/2018/06/29/SeqGAN/model_structure.jpg">
 
 
 
@@ -134,13 +140,13 @@
 
 
 
-  <link rel="canonical" href="http://wangyp.tech/"/>
+  <link rel="canonical" href="http://wangyp.tech/2018/06/29/SeqGAN/"/>
 
 
 
 
 
-  <title>Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>用GAN生成对抗网络和RL强化学习手段生成自然语言序列 | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -159,8 +165,7 @@
     
   
 
-  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left 
-  page-home">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -243,9 +248,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -275,9 +280,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/06/29/SeqGAN/" itemprop="url">用GAN生成对抗网络和RL强化学习手段生成自然语言序列</a></h1>
+          <h1 class="post-title" itemprop="name headline">用GAN生成对抗网络和RL强化学习手段生成自然语言序列</h1>
         
 
         <div class="post-meta">
@@ -327,9 +330,7 @@
       
 
       
-        
-          
-            <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><h2 id="GAN的思想"><a href="#GAN的思想" class="headerlink" title="GAN的思想"></a>GAN的思想</h2><ol>
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><h2 id="GAN的思想"><a href="#GAN的思想" class="headerlink" title="GAN的思想"></a>GAN的思想</h2><ol>
 <li>组件：生成器G（Generator），鉴别器D（Discriminator）</li>
 <li>对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据</li>
 <li>目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据<h2 id="GAN的不足之处"><a href="#GAN的不足之处" class="headerlink" title="GAN的不足之处"></a>GAN的不足之处</h2></li>
@@ -382,8 +383,6 @@
 <li><strong>生成器生成的的句子长度都是相同的，是否能够满足我们的需求（句子生成的终点判定）</strong></li>
 </ol>
 
-          
-        
       
     </div>
     
@@ -398,305 +397,42 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2017/12/22/professional  text classification based on CNN/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wang Yipeng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yipeng's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/22/professional  text classification based on CNN/" itemprop="url">基于卷积神经网络（CNN）的专业文本语料分类</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-22T09:14:24+08:00">
-                2017-12-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/Tensorflow/" rel="tag"># Tensorflow</a>
           
-            
+            <a href="/tags/NLP/" rel="tag"># NLP</a>
           
-
+            <a href="/tags/GAN/" rel="tag"># GAN</a>
           
+            <a href="/tags/RL/" rel="tag"># RL</a>
           
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>T 平台上有大量的双语句对，大部分句对没有被标注类别，其余的句对虽然被标注了类别，但是不准确，真正被准确标注的句对只占相当少的一部分。T 平台上的语料检索、内容分发与路由都依赖于准确的语料类别标注，对于这样的大量的（千万量级）双语句对语料，我考虑利用 CNN 训练出分类器模型，对所有现有的语料数据进行分类，另外可以把分类分类器模型包装成 web 服务，对新增预料数据进行实时的分类。</p>
-<h1 id="训练样本收集与预处理"><a href="#训练样本收集与预处理" class="headerlink" title="训练样本收集与预处理"></a>训练样本收集与预处理</h1><h2 id="样本来源"><a href="#样本来源" class="headerlink" title="样本来源"></a>样本来源</h2><p>由于平台上的语料数据专门服务于翻译行业，语料中有相当多的专业词汇，与常见的语料数据库（<a href="http://www.sogou.com/labs/resource/list_news.php" target="_blank" rel="noopener">搜狗新闻数据库</a>、<a href="http://www.nlpir.org/?action-viewnews-itemid-103" target="_blank" rel="noopener">复旦新闻数据库</a>等）差异巨大，因此训练所用到的数据均来自于平台上现有数据。</p>
-<h2 id="中英文分离"><a href="#中英文分离" class="headerlink" title="中英文分离"></a>中英文分离</h2><p>目的：将双语文本中的中英文分离，分别训练出一个分类器，这样做可以充分利用双语句对的特性，两个分类器可以相互加强，提高分类器的效果。</p>
-<p>方案：构建若干个字符集合（英文字母/数字集合、英文标点集合、中文标点集合、空格、英文全角字母/数字集合），利用<code>filter()</code>函数很容易将这些集合中的字符从原始文本中去除/保留，从而实现中英文的分离。去除标点也可以利用 jieba 分词器自带的词性标注功能，标点和其他罕见字符都会标注成 X，因此很容易去除，但因为词性标注功能和用户词典加载功能不兼容，最后没有采用。</p>
-<p>用到的库/方法：标准库 string</p>
-<pre><code>import string
-string.printable
-filter(function, iterable)
-</code></pre><h2 id="分词"><a href="#分词" class="headerlink" title="分词"></a>分词</h2><p>目的：无论是文本向量化，还是停止词过滤等基于词语的文本操作，都需要先对文本进行分词。</p>
-<p>方案：英文分词直接用空格分词即可，中文分词利用 jieba 分词库。</p>
-<p>用到的库/方法：<a href="http://www.oss.io/p/fxsjy/jieba" target="_blank" rel="noopener">中文分词库 jieba</a></p>
-<pre><code>import jieba
-jieba.posseg.cut()
-</code></pre><h2 id="停止词过滤"><a href="#停止词过滤" class="headerlink" title="停止词过滤"></a>停止词过滤</h2><p>目的：<a href="https://en.wikipedia.org/wiki/Stop_words" target="_blank" rel="noopener">停止词</a>指的是那些使用频率过高、对语句信息贡献很小的词，这些词对我们的分类任务几乎没有帮助，而且稀释别的具有区分性的词，因此在训练之前要将这些词过滤掉。将停止词数据库放到集合类型<code>set()</code>中去，过滤方法同上不再赘述。</p>
-<h2 id="训练样本的提纯"><a href="#训练样本的提纯" class="headerlink" title="训练样本的提纯"></a>训练样本的提纯</h2><p>目的：神经网络的训练允许训练样本中存在噪声，但平台上现有的语料质量依然无法满足要求，有大量的被错误标注的语料，因此我们需要对现有语料进行一次“提纯”。</p>
-<p>方案：<a href="http://pinyin.sogou.com/dict/" target="_blank" rel="noopener">搜狗细胞词库</a>/T 平台上有质量非常好的术语数据，利用这些术语数据可以从原始样本中选出质量相对较高的样本。对于一段语料（假设被标注为：医药），利用医药术语数据，我们可以统计出这段语料中出现的医药术语的频数，以及医药术语占这段语料总词数的百分比，综合这两个指标，我们可以判断出这段语料确实是属于“医药”的程度，通过实验测试出合理的阈值，从而选择出高质量的语料数据。</p>
-<p>用到的库/方法：<a href="http://radimrehurek.com/gensim/tutorial.html" target="_blank" rel="noopener">自然语言处理库 Gensim</a></p>
-<pre><code>from gensim import corpora
-corpora.Dictionary()
-corpora.Dictionary.token2id
-corpora.Dictionary.filter_tokens()
-corpora.Dictionary.compactify()
-corpora.Dictionary.save()
-corpora.Dictionary.doc2bow()
-corpora.Dictionary.load()
-</code></pre><h2 id="向量化"><a href="#向量化" class="headerlink" title="向量化"></a>向量化</h2><p>目的：必须把长度各异的文本处理成长度相同的向量才能够输入 CNN 进行训练。</p>
-<p>方案：由于预料数据中的句子长度较短，单句包含信息量少，不利于我们提取特征、区分类别，因此需要将短句组合成较长的（40 词到 50 词）并且长度相近的句段；然后，利用基于词频的词袋（Bag of Words）模型，把句段转化成 one-hot 向量（向量的每一位对应一个词，这一位的数字就是这个词在句段中出现的频数，可以看出向量长度与词典大小相同）；最后，在输入神经网络之前，做一次长度归一化（通过补 0 或者截短，生成长度恰好为 50 的向量）。</p>
-<h1 id="CNN-训练"><a href="#CNN-训练" class="headerlink" title="CNN 训练"></a>CNN 训练</h1><h2 id="CNN-结构"><a href="#CNN-结构" class="headerlink" title="CNN 结构"></a>CNN 结构</h2><ul>
-<li>Embedding Layer：输入 CNN 的是尺寸为<code>50 * Size of Dictionary</code>的二维向量， 因为字典尺寸很大，所以这些二维向量的尺寸也很大，并且十分系数（含有大量的0），CNN 不善于处理如此高维而且稀疏的向量，因此需要嵌入层把这些向量降维到<code>50 * 200</code>或者 其他合适的尺寸（根据实际计算能力选择），再输入第二层训练更加高级的特征。这一层的作用就相当于一次预训练，其实已经提取出了初级的文本特征。</li>
-<li>Dropout Layer：利用 Dropout 方法，减少过拟合现象。</li>
-<li>Convolutional Layer：卷积层，提取文本向量局部特征。</li>
-<li>Pooling Layer：进一步缩减向量尺寸。</li>
-<li>Fully connected Layer (reLu)：加速训练。</li>
-<li>Fully connected Layer (softmax)：把向量收缩到 15 维（对应 15 个类别），生成概率分布。</li>
-</ul>
-<h2 id="CNN-训练结果"><a href="#CNN-训练结果" class="headerlink" title="CNN 训练结果"></a>CNN 训练结果</h2><p>本文实验语料数据共有15个类别，每个类别分别有 50000 左右句对参与训练，使用 tensorflow 机器学习框架、Keras 提供的高级接口，在 GTX1050ti CUDA 加速下，完成单个 CNN 模型的训练需要 30 min，在测试集的上的分类准确率达到 90%。</p>
-<h1 id="输出预测结果"><a href="#输出预测结果" class="headerlink" title="输出预测结果"></a>输出预测结果</h1><p>模型训练完成之后，我们进一步在新的样本上进行测试，发现很多样本的预测结果不符合常识判断，而这些样本实际上不属于任何一个已知的类别，我们要将这些样本剔除，于是考虑新增一个 UNCLEAR 类别，专门用于接纳那些不属于任何一个已知类别的样本，这些样本由于不属于任何一个类别，我们推测这样的样本输入 CNN 网络后，输出的概率分布的方差应该是相对较小的，通过实验，发现情况确实如此，我们成功地找到了一个方差阈值，将一些无分类样本分到了 UNLCELEAR 类别，提高了分类结果地可靠性。</p>
-<p>由于 CNN 要求输入的向量尺寸相同，我们需要对一些长句子进行截短操作，这回导致语句信息的丢失，如果丢失了那些能够决定句子类别的关键词语，这将导致预测分类的结果变差，因此，我们对于对同一个样本，我们将词序打乱，用 CNN 进行多次判断，这样因为截短操作而丢失关键信息的可能性就大大减小了，最后我们可以根据多次判断的结果，综合得出预测的结果（如果一个句子多次被判断为同一类别，我们就确信它属于这个列别，其余的可以被预测为 UNCLEAR）。</p>
-<p>最终，两步优化大大改善了预测结果的可靠性。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
       
 
-  
-
-  
-  
-  
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2017/09/17/tensorflow instruction/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wang Yipeng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yipeng's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/09/17/tensorflow instruction/" itemprop="url">Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-09-17T13:34:52+08:00">
-                2017-09-17
-              </time>
+              <a href="/2017/12/22/professional  text classification based on CNN/" rel="next" title="基于卷积神经网络（CNN）的专业文本语料分类">
+                <i class="fa fa-chevron-left"></i> 基于卷积神经网络（CNN）的专业文本语料分类
+              </a>
             
+          </div>
 
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
             
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+          </div>
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p>本文并不是一个教程，step by step 的教网络上有很多，然而我想说的是：turn to offical guide first!!!，我曾了为了搭建 tensorflow-gpu 的环境参考了很多网络上的教程，失败到吐血，各种莫名其妙的错误，最终发现，目前（2017/9）的 tesorflow-gpu 只支持6.X版本cuDNN加速库（我错装成了最新版本，虽然是我蠢，但是很少有教程会强调这点），而所有地细节在官方文档中都能找到明确地答案，所以大家不要偷懒，直接去看官方文档吧，我会在下面贴出所有相关地地址。</p>
-<p>因为在 WIN10 上 CUDA 需要 VS2015 运行环境[1]，而我为了开发 UWP 已经安装了 VS2017，所以VS C++ 2015 runtime 一直无法安装，又不想卸载 VS2017，于是就转战 Ubuntu 16.04 LTS 了。</p>
-<p>三步走：</p>
-<ul>
-<li>下载安装 CUDA</li>
-<li>下载安装 cuDNN (虽然是选用加速库，但 Tensorflow 要求必须安装，不然报错)</li>
-<li>安装 tensorflow-gpu</li>
-</ul>
-<p><strong>但要先去看 tensorflow 的官方安装指南，了解整个过程与要求。</strong></p>
-<h4 id="下载安装-CUDA"><a href="#下载安装-CUDA" class="headerlink" title="下载安装 CUDA"></a>下载安装 CUDA</h4><p><a href="http://docs.nvidia.com/cuda/cuda-installation-guide-linux/#axzz4VZnqTJ2A" target="_blank" rel="noopener">CUDA for Linux 官方文档</a><br><a href="https://developer.nvidia.com/cuda-downloads" target="_blank" rel="noopener">CUDA 下载地址</a><br>你知道应该选择哪个进行下载</p>
-<h4 id="下载安装-cuDNN"><a href="#下载安装-cuDNN" class="headerlink" title="下载安装 cuDNN"></a>下载安装 cuDNN</h4><p><a href="http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#installlinux" target="_blank" rel="noopener">cuDNN 官方文档</a><br><a href="https://developer.nvidia.com/rdp/cudnn-download" target="_blank" rel="noopener">cuDNN 下载地址</a><br>千万不要下载错了</p>
-<h4 id="安装-tensorflow-gpu"><a href="#安装-tensorflow-gpu" class="headerlink" title="安装 tensorflow-gpu"></a>安装 tensorflow-gpu</h4><p><a href="https://www.tensorflow.org/install/" target="_blank" rel="noopener">tensorflow 官方安装指南</a>(需要翻墙…)<br>另外tensorflow官网下又论坛，可以解决很多实际操作中遇到的问题。</p>
-<p>最后如果你运行并通过了 tensorflow 官方安装指南下的测试程序，看到你的显卡信息，基本上就算是成功了。</p>
-<p>[1] 实际上，后来我又在 WIN10 下尝试搭建环境，虽然 CUDA 在安装的时候警告说找不到支持的编译器 (VS2015)，但依然可以强行安装，最后也可以通过 tensorflow 的测试程序，并且我用 Python 跑了一个 CNN 确实可以加速，难道是因为 anaconda 中自带的 VS2015 runtime… 反正能用就好了</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -706,10 +442,11 @@ corpora.Dictionary.load()
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -717,6 +454,10 @@ corpora.Dictionary.load()
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -737,8 +478,17 @@ corpora.Dictionary.load()
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           
             <img class="site-author-image" itemprop="image"
@@ -794,6 +544,22 @@ corpora.Dictionary.load()
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的思想"><span class="nav-number">1.1.</span> <span class="nav-text">GAN的思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GAN的不足之处"><span class="nav-number">1.2.</span> <span class="nav-text">GAN的不足之处</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RL的功能"><span class="nav-number">1.3.</span> <span class="nav-text">RL的功能</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#模型结构"><span class="nav-number">2.</span> <span class="nav-text">模型结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#整体框架"><span class="nav-number">2.1.</span> <span class="nav-text">整体框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Generator-RNN-with-LSTM"><span class="nav-number">2.2.</span> <span class="nav-text">Generator - RNN with LSTM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Discriminator-CNN-with-Highway"><span class="nav-number">2.3.</span> <span class="nav-text">Discriminator - CNN with Highway</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Roll-out-Model"><span class="nav-number">2.4.</span> <span class="nav-text">Roll-out Model</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Oracle-Model-Target-LSTM"><span class="nav-number">2.5.</span> <span class="nav-text">Oracle Model - Target LSTM</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代码流程"><span class="nav-number">3.</span> <span class="nav-text">代码流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#公式推导"><span class="nav-number">4.</span> <span class="nav-text">公式推导</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实际应用中的问题"><span class="nav-number">5.</span> <span class="nav-text">实际应用中的问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
