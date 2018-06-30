@@ -95,21 +95,21 @@
 
 
 
-<meta name="description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一">
+<meta name="description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据  GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得">
 <meta name="keywords" content="Tensorflow,NLP,GAN,RL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="用GAN生成对抗网络和RL强化学习手段生成自然语言序列">
 <meta property="og:url" content="http://wangyp.tech/2018/06/29/SeqGAN/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
-<meta property="og:description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一">
+<meta property="og:description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据  GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得">
 <meta property="og:locale" content="en">
 <meta property="og:image" content="http://wangyp.tech/2018/06/29/SeqGAN/model_structure.jpg">
 <meta property="og:image" content="http://wangyp.tech/2018/06/29/SeqGAN/generator.jpg">
 <meta property="og:image" content="http://wangyp.tech/2018/06/29/SeqGAN/discriminator.jpg">
-<meta property="og:updated_time" content="2018-06-30T05:06:45.817Z">
+<meta property="og:updated_time" content="2018-06-30T05:15:33.320Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="用GAN生成对抗网络和RL强化学习手段生成自然语言序列">
-<meta name="twitter:description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一">
+<meta name="twitter:description" content="背景GAN的思想 组件：生成器G（Generator），鉴别器D（Discriminator） 对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据 目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据  GAN的不足之处 G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得">
 <meta name="twitter:image" content="http://wangyp.tech/2018/06/29/SeqGAN/model_structure.jpg">
 
 
@@ -330,15 +330,19 @@
       
 
       
-        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><h2 id="GAN的思想"><a href="#GAN的思想" class="headerlink" title="GAN的思想"></a>GAN的思想</h2><ol>
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><h2 id="GAN的思想"><a href="#GAN的思想" class="headerlink" title="GAN的思想"></a>GAN的思想</h2><ul>
 <li>组件：生成器G（Generator），鉴别器D（Discriminator）</li>
 <li>对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据</li>
-<li>目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据<h2 id="GAN的不足之处"><a href="#GAN的不足之处" class="headerlink" title="GAN的不足之处"></a>GAN的不足之处</h2></li>
+<li>目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据</li>
+</ul>
+<h2 id="GAN的不足之处"><a href="#GAN的不足之处" class="headerlink" title="GAN的不足之处"></a>GAN的不足之处</h2><ul>
 <li>G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一个具体的单词），这导致D的损失函数不是连续可微的，这使得梯度下架很难处理。</li>
-<li>D只能评估出整个生成序列的score/loss，不能够细化到去评估当前生成token的好坏和对后面生成的影响<h2 id="RL的功能"><a href="#RL的功能" class="headerlink" title="RL的功能"></a>RL的功能</h2></li>
+<li>D只能评估出整个生成序列的score/loss，不能够细化到去评估当前生成token的好坏和对后面生成的影响</li>
+</ul>
+<h2 id="RL的功能"><a href="#RL的功能" class="headerlink" title="RL的功能"></a>RL的功能</h2><ul>
 <li>Policy Gradient取代反向传播：利用reward作为反馈，增加具有高reward的动作（G生成一个单词）出现的概率，减小reward小的动作出现的概率，以此进行梯度训练，更新参数，不再需要依赖于D的反向传播来更新参数，</li>
 <li>Roll-out Model生成完整序列：将当前生成的不完整的序列补全为完整的序列，从而可以直接输入D得到一个score/loss（reward）</li>
-</ol>
+</ul>
 <h1 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h1><h2 id="整体框架"><a href="#整体框架" class="headerlink" title="整体框架"></a>整体框架</h2><img src="/2018/06/29/SeqGAN/model_structure.jpg">
 <h2 id="Generator-RNN-with-LSTM"><a href="#Generator-RNN-with-LSTM" class="headerlink" title="Generator - RNN with LSTM"></a>Generator - RNN with LSTM</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">generator = Generator(vocab_size, BATCH_SIZE, EMB_DIM, HIDDEN_DIM, SEQ_LENGTH, START_TOKEN)</span><br></pre></td></tr></table></figure>
 <img src="/2018/06/29/SeqGAN/generator.jpg">
