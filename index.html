@@ -253,7 +253,7 @@
   
   
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
   
   
   
@@ -277,7 +277,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/07/06/LeakGAN/" itemprop="url">Untitled</a></h1>
+                <a class="post-title-link" href="/2018/07/06/LeakGAN/" itemprop="url">LeakGAN</a></h1>
         
 
         <div class="post-meta">
@@ -329,22 +329,18 @@
       
         
           
-            <p><em>LeakGAN</em></p>
-<hr>
-<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>LeakGAN其实上就是SeqGAN的一个加强版，不同于SeqGAN仅利用Discriminator反馈的reward来训练Generator，LeakGAN还通过通过引入Discriminator隐层提取出的高级特征（leaked information）来指导Generator进行序列生成，使得模型的长序列生成性能得到显著的提高。此外LeakGAN的实验中还利用了若干trick解决了在训练SeqGAN中遇到的一些问题。 </p>
-<h1 id="核心问题-—-长文本生成"><a href="#核心问题-—-长文本生成" class="headerlink" title="核心问题 — 长文本生成"></a>核心问题 — 长文本生成</h1><p>我们之前用SeqGAN做过实验，这里给出几个长文本（20个单词）生成结果的示例：</p>
+            <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>LeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator，LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminator into the training of Generator，which greatly improve the performance of generating long text. Some other tricks are also included in the experioment of LeakGAN aiming to solving some problems showed in SeqGAN. </p>
+<h1 id="Core-problem-—-Long-text-generation"><a href="#Core-problem-—-Long-text-generation" class="headerlink" title="Core problem — Long text generation"></a>Core problem — Long text generation</h1><p>In my previous experiment of SeqGAN, some generation results are shown bellow:</p>
 <ul>
-<li>例子1</li>
-<li>例子2</li>
-<li>例子3</li>
+<li>: ( data is stored in internal server and can not be fetched out</li>
 </ul>
-<p>从上面的例子可以看出其生成长文本的能力很差，主要原因在于：</p>
+<p>From the examples above, we can find the result is very bad. It mainly because:</p>
 <ol>
-<li>Reward 包含的信息量对于长文本生成来说太少</li>
-<li>Generator所采用的LSTM网咯并不具备长期记忆能力 </li>
+<li>Information contained in Reward is not enough for generating long test.</li>
+<li>LSTM used in Generator is not capable to form long-term memory.</li>
 </ol>
-<p>为了解决第一个问题LeakGAN模型把Discriminator的隐层（卷积池化层）输出的feature map作为leaked information来训练Manager生成goal vector，Worker再利用goal vector包含的高阶信息（一般是语句结构上的信息）和Discriminator最后反馈的reward来进行序列生成，以此来解决reward信息量不够的问题。</p>
-<h2 id="Model-structure"><a href="#Model-structure" class="headerlink" title="Model structure"></a>Model structure</h2><p><img src="model_structure.png" alt="model_structure"></p>
+<p>To solve the 1st problem, LeakGAN uses feature map outputted by Discriminator’s CNN-Maxpooling layer as leaked information to train Manager to generate goal vectors. Then, Worker uses goal vectors and Discriminator’s reward together to generate sequences.</p>
+<h2 id="Model-structure"><a href="#Model-structure" class="headerlink" title="Model structure"></a>Model structure</h2><img src="/2018/07/06/LeakGAN/model_structure.jpg">
 <p><strong>Discriminator-Feature Extractor CNN</strong></p>
 <p>$f_t=\digamma(S_t; \phi_f)$</p>
 <p><strong>Generator-Manager LSTM</strong></p>
@@ -354,7 +350,7 @@
 <p><strong>Generator-Worker LSTM</strong></p>
 <p>$O<em>t, h_t^{w}=W(x_t, h^w</em>{t-1}; \theta_w)$</p>
 <p>$G<em>{\theta}(x</em>{t+1}|s_t)=softmax(O_t\centerdot w_t/\alpha)$</p>
-<h2 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h2><h3 id="Generator-training"><a href="#Generator-training" class="headerlink" title="Generator training"></a>Generator training</h3><p>Manager和Worker交替训练，训练其中一个的时候要固定另外一个的参数（当然Discriminator的参数这时也是固定的）。Manager被训练用来估计高层次的序列生成方向（advantageous directions），Worker被训练用来跟随Manager输出的序列生成方向（follow the directions）。</p>
+<h2 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h2><h3 id="Generator-training"><a href="#Generator-training" class="headerlink" title="Generator training"></a>Generator training</h3><p>Manager and Worker are trained alternatively. One should be fixed when the other is in training. Manager is trained to generate advantageous directions. Worker is trained to follow the directions.</p>
 <p><strong>Gradient of Manager $\nabla_{\theta_m}g_t$</strong></p>
 <ul>
 <li><p><em>Expected reward under current policy</em></p>
