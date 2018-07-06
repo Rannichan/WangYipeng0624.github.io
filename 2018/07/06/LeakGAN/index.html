@@ -95,19 +95,19 @@
 
 
 
-<meta name="description" content="IntroductionLeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator，LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminat">
+<meta name="description" content="IntroductionLeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator, LeakGAN add high-level feature (leaked information) extracted by CNN in Discrimina">
 <meta name="keywords" content="Tensorflow,NLP,GAN,RL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeakGAN">
+<meta property="og:title" content="LeakGAN - a Long Text Generating Model">
 <meta property="og:url" content="http://wangyp.tech/2018/07/06/LeakGAN/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
-<meta property="og:description" content="IntroductionLeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator，LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminat">
+<meta property="og:description" content="IntroductionLeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator, LeakGAN add high-level feature (leaked information) extracted by CNN in Discrimina">
 <meta property="og:locale" content="en">
 <meta property="og:image" content="http://wangyp.tech/2018/07/06/LeakGAN/model_structure.jpg">
-<meta property="og:updated_time" content="2018-07-06T12:38:28.019Z">
+<meta property="og:updated_time" content="2018-07-06T12:47:45.381Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LeakGAN">
-<meta name="twitter:description" content="IntroductionLeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator，LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminat">
+<meta name="twitter:title" content="LeakGAN - a Long Text Generating Model">
+<meta name="twitter:description" content="IntroductionLeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator, LeakGAN add high-level feature (leaked information) extracted by CNN in Discrimina">
 <meta name="twitter:image" content="http://wangyp.tech/2018/07/06/LeakGAN/model_structure.jpg">
 
 
@@ -144,7 +144,7 @@
 
 
 
-  <title>LeakGAN | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>LeakGAN - a Long Text Generating Model | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -278,7 +278,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">LeakGAN</h1>
+          <h1 class="post-title" itemprop="name headline">LeakGAN - a Long Text Generating Model</h1>
         
 
         <div class="post-meta">
@@ -328,7 +328,7 @@
       
 
       
-        <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>LeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator，LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminator into the training of Generator，which greatly improve the performance of generating long text. Some other tricks are also included in the experioment of LeakGAN aiming to solving some problems showed in SeqGAN. </p>
+        <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>LeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator, LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminator into the training of Generator, which greatly improve the performance of generating long text. Some other tricks are also included in the experioment of LeakGAN aiming to solving some problems showed in SeqGAN. </p>
 <h1 id="Core-problem-—-Long-text-generation"><a href="#Core-problem-—-Long-text-generation" class="headerlink" title="Core problem — Long text generation"></a>Core problem — Long text generation</h1><p>In my previous experiment of SeqGAN, some generation results are shown bellow:</p>
 <ul>
 <li>: ( data is stored in internal server and can not be fetched out</li>
@@ -341,54 +341,37 @@
 <p>To solve the 1st problem, LeakGAN uses feature map outputted by Discriminator’s CNN-Maxpooling layer as leaked information to train Manager to generate goal vectors. Then, Worker uses goal vectors and Discriminator’s reward together to generate sequences.</p>
 <h2 id="Model-structure"><a href="#Model-structure" class="headerlink" title="Model structure"></a>Model structure</h2><img src="/2018/07/06/LeakGAN/model_structure.jpg">
 <p><strong>Discriminator-Feature Extractor CNN</strong></p>
-<p>$f_t=\digamma(S_t; \phi_f)$</p>
-<p><strong>Generator-Manager LSTM</strong></p>
-<p>$\hat{g<em>t}, h^m_t=M(f_t, h^m</em>{t-1}; \theta_m)$</p>
-<p>$g_t=\hat{g_t}/||\hat{g_t}||$    </p>
-<p>$w<em>t=W</em>{\psi}(\sum^c<em>{i=1}g</em>{t-i})$</p>
-<p><strong>Generator-Worker LSTM</strong></p>
-<p>$O<em>t, h_t^{w}=W(x_t, h^w</em>{t-1}; \theta_w)$</p>
-<p>$G<em>{\theta}(x</em>{t+1}|s_t)=softmax(O_t\centerdot w_t/\alpha)$</p>
-<h2 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h2><h3 id="Generator-training"><a href="#Generator-training" class="headerlink" title="Generator training"></a>Generator training</h3><p>Manager and Worker are trained alternatively. One should be fixed when the other is in training. Manager is trained to generate advantageous directions. Worker is trained to follow the directions.</p>
-<p><strong>Gradient of Manager $\nabla_{\theta_m}g_t$</strong></p>
+<script type="math/tex; mode=display">f_t=\digamma(S_t; \phi_f)</script><p><strong>Generator-Manager LSTM</strong></p>
+<script type="math/tex; mode=display">\hat{g_t}, h^m_t=M(f_t, h^m_{t-1}; \theta_m)</script><script type="math/tex; mode=display">g_t=\hat{g_t}/||\hat{g_t}||</script><script type="math/tex; mode=display">w_t=W_{\psi}(\sum^c_{i=1}g_{t-i})</script><p><strong>Generator-Worker LSTM</strong></p>
+<script type="math/tex; mode=display">O_t, h_t^{w}=W(x_t, h^w_{t-1}; \theta_w)</script><script type="math/tex; mode=display">G_{\theta}(x_{t+1}|s_t)=softmax(O_t\centerdot w_t/\alpha)</script><h2 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h2><h3 id="Generator-training"><a href="#Generator-training" class="headerlink" title="Generator training"></a>Generator training</h3><p>Manager and Worker are trained alternatively. One should be fixed when the other is in training. Manager is trained to generate advantageous directions. Worker is trained to follow the directions.</p>
+<p><strong>Gradient of Manager <script type="math/tex">\nabla_{\theta_m}g_t</script></strong></p>
 <ul>
 <li><p><em>Expected reward under current policy</em></p>
-<p>$E[r_t]=Q(f_t, g_t)=Q_F(s_t, g_t)$</p>
-</li>
+<script type="math/tex; mode=display">E[r_t]=Q(f_t, g_t)=Q_F(s_t, g_t)</script></li>
 <li><p><em>Cosine similarity between change of feature representation and goal vector</em></p>
-<p>$d<em>{cos}(f</em>{t+c}-f_t, g_t(\theta_m))$</p>
-</li>
+<script type="math/tex; mode=display">d_{cos}(f_{t+c}-f_t, g_t(\theta_m))</script></li>
 <li><p><em>Policy gradient</em></p>
-<p>$\nabla<em>{\theta_m}g_t=-Q_F(s_t, g_t)\nabla</em>{\theta<em>m}d</em>{cos}(f_{t+c}-f_t, g_t(\theta_m))$</p>
-</li>
+<script type="math/tex; mode=display">\nabla_{\theta_m}g_t=-Q_F(s_t, g_t)\nabla_{\theta_m}d_{cos}(f_{t+c}-f_t, g_t(\theta_m))</script></li>
 </ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">self.goal_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(self.reward,</span><br><span class="line">                <span class="number">1</span>-tf.losses.cosine_distance(</span><br><span class="line">                  	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">                  	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>), </span><br><span class="line">                  	<span class="number">2</span></span><br><span class="line">                )</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size / self.step_size)</span><br></pre></td></tr></table></figure>
 <p><strong>Gradient of Worker</strong></p>
 <ul>
 <li><p><em>Intrinsic reward</em></p>
-<p>$r^I<em>t=\frac{1}{c}\sum^c</em>{i=1}d<em>{cos}(f_t-f</em>{t-i}, g_{t-i})$</p>
-</li>
+<script type="math/tex; mode=display">r^I_t=\frac{1}{c}\sum^c_{i=1}d_{cos}(f_t-f_{t-i}, g_{t-i})</script></li>
 </ul>
 <ul>
 <li><p><em>Expected intrinsic reward over all possible actions</em></p>
-<p>$\sum<em>{x_t}r^I_tW(x_t|s</em>{t-1}; \theta_w)$</p>
-</li>
+<script type="math/tex; mode=display">\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)</script></li>
 <li><p><em>Expected intrinsic reward over all possible actions &amp; all current states</em></p>
-<p>$E<em>{s</em>{t-1}\sim G}[\sum<em>{x_t}r^I_tW(x_t|s</em>{t-1}; \theta_w)]$</p>
-</li>
+<script type="math/tex; mode=display">E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)]</script></li>
 <li><p><em>Policy gradient</em></p>
-<p>$\nabla<em>{\theta_w}E</em>{s<em>{t-1}\sim G}[\sum</em>{x<em>t}r^I_tW(x_t|s</em>{t-1}; \theta_w)]$</p>
-<p>$=E<em>{s</em>{t-1}\sim G}[\sum<em>{x_t}r^I_t\nabla</em>{\theta_w}W]$</p>
-<p>$=E<em>{s</em>{t-1}\sim G}[\sum<em>{x_t}r^I_tW\frac{\nabla</em>{\theta_w}W}{W}]$</p>
-<p>$=E<em>{s</em>{t-1}\sim G, x<em>t\sim W}[r^I_t\nabla</em>{\theta_w}logW]$</p>
-</li>
+<script type="math/tex; mode=display">\nabla_{\theta_w}E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G}[\sum_{x_t}r^I_t\nabla_{\theta_w}W]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW\frac{\nabla_{\theta_w}W}{W}]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G, x_t\sim W}[r^I_t\nabla_{\theta_w}logW]</script></li>
 </ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">self.Worker_Reward = <span class="number">1</span>-tf.losses.cosine_distance(tf.nn.l2_normalize(self.all_sub_features,<span class="number">2</span>),</span><br><span class="line">                                                 tf.nn.l2_normalize(self.all_sub_goals,<span class="number">2</span>), </span><br><span class="line">                                                 <span class="number">2</span>)</span><br><span class="line">self.worker_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(</span><br><span class="line">      	self.Worker_Reward,</span><br><span class="line">      	tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>) * \</span><br><span class="line">      	tf.log(tf.clip_by_value(tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), <span class="number">1e-20</span>, \			<span class="number">1.0</span>))</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
 <p><strong>Pretraining of Manager</strong></p>
-<p>$\hat{s_t}$ denotes states of real text</p>
-<p>$\hat{f_t}=F(\hat{s_t})$</p>
-<p>$\nabla^{pre}<em>{\theta_m}g_t = -\nabla</em>{\theta<em>m}d</em>{cos}(\hat{f_{t+c}}-\hat{f_t}, g_t(\theta_m))$</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sub_feature = tf.cond(i % step_size &gt; <span class="number">0</span>, </span><br><span class="line">                      <span class="keyword">lambda</span>: sub_feature,</span><br><span class="line">                      <span class="keyword">lambda</span>: tf.cond(i &gt; <span class="number">0</span>, </span><br><span class="line">                                      <span class="keyword">lambda</span>:sub_feature.write(i/step_size<span class="number">-1</span>,tf.subtract(feature,feature_array.read(i - step_size))),</span><br><span class="line">                    				  <span class="keyword">lambda</span>: sub_feature</span><br><span class="line">                                     )</span><br><span class="line">                     )</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.sub_feature = self.sub_feature.stack() <span class="comment"># seq_length x batch_size x num_filter</span></span><br><span class="line">self.sub_feature = tf.transpose(self.sub_feature, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.real_goal_array = self.real_goal_array.stack()</span><br><span class="line">self.real_goal_array = tf.transpose(self.real_goal_array, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.pretrain_goal_loss = -tf.reduce_sum(</span><br><span class="line">	<span class="number">1</span> - tf.losses.cosine_distance(</span><br><span class="line">    	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">      	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>),</span><br><span class="line">		<span class="number">2</span></span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size/self.step_size)</span><br></pre></td></tr></table></figure>
+<script type="math/tex; mode=display">\hat{s_t}$$ denotes states of real text
+
+$$\hat{f_t}=F(\hat{s_t})</script><script type="math/tex; mode=display">\nabla^{pre}_{\theta_m}g_t = -\nabla_{\theta_m}d_{cos}(\hat{f_{t+c}}-\hat{f_t}, g_t(\theta_m))</script><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sub_feature = tf.cond(i % step_size &gt; <span class="number">0</span>, </span><br><span class="line">                      <span class="keyword">lambda</span>: sub_feature,</span><br><span class="line">                      <span class="keyword">lambda</span>: tf.cond(i &gt; <span class="number">0</span>, </span><br><span class="line">                                      <span class="keyword">lambda</span>:sub_feature.write(i/step_size<span class="number">-1</span>,tf.subtract(feature,feature_array.read(i - step_size))),</span><br><span class="line">                    				  <span class="keyword">lambda</span>: sub_feature</span><br><span class="line">                                     )</span><br><span class="line">                     )</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.sub_feature = self.sub_feature.stack() <span class="comment"># seq_length x batch_size x num_filter</span></span><br><span class="line">self.sub_feature = tf.transpose(self.sub_feature, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.real_goal_array = self.real_goal_array.stack()</span><br><span class="line">self.real_goal_array = tf.transpose(self.real_goal_array, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.pretrain_goal_loss = -tf.reduce_sum(</span><br><span class="line">	<span class="number">1</span> - tf.losses.cosine_distance(</span><br><span class="line">    	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">      	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>),</span><br><span class="line">		<span class="number">2</span></span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size/self.step_size)</span><br></pre></td></tr></table></figure>
 <p><strong>Pretraining of Worker</strong></p>
 <p><em>MLE</em></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">g_predictions = tf.cond(</span><br><span class="line">                i&gt;<span class="number">0</span>,</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions.write(i<span class="number">-1</span>, tf.nn.softmax(x_logits)),</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions)</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.g_predictions = tf.transpose(self.g_predictions.stack(), perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.cross_entropy = tf.reduce_sum(</span><br><span class="line">  		self.g_predictions * tf.log(tf.clip_by_value(self.g_predictions, <span class="number">1e-20</span>, <span class="number">1.0</span>))</span><br><span class="line">	) / (self.batch_size * self.sequence_length * self.vocab_size)</span><br><span class="line">self.pretrain_worker_loss = -tf.reduce_sum(</span><br><span class="line">  		tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>)* \</span><br><span class="line">  		tf.log(tf.clip_by_value(</span><br><span class="line">        	tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), </span><br><span class="line">          	<span class="number">1e-20</span>, <span class="number">1.0</span>)</span><br><span class="line">        )</span><br><span class="line">	) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
@@ -398,8 +381,8 @@
 <hr>
 <h1 id="Problem-2-—-Gradient-Vanishing"><a href="#Problem-2-—-Gradient-Vanishing" class="headerlink" title="Problem 2 — Gradient Vanishing"></a>Problem 2 — Gradient Vanishing</h1><p>There will be a severe gradient vanishing problem during the training of GAN when D is much stronger than  G. The reward is too small to update the parameters in G. Therefore it needs to  be rescaled.</p>
 <p><strong>Trick — Bootstrapped Rescaled Activation</strong></p>
-<p>Reward matrix is $R_{B*T}$ with batch-size B and sequence-length T.</p>
-<p>Rescale it by doing $R_{i,t} = \sigma(\delta\centerdot(0.5-\frac{rank(i)}{B}))$.</p>
+<p>Reward matrix is <script type="math/tex">R_{B*T}</script> with batch-size B and sequence-length T.</p>
+<p>Rescale it by doing <script type="math/tex">R_{i,t} = \sigma(\delta\centerdot(0.5-\frac{rank(i)}{B}))</script>.</p>
 <ul>
 <li>Expectation and variance of the reward in each mini-batch are constant!</li>
 <li>In general, all ranking model can prevent the gradient vanishing problem (<a href="http://papers.nips.cc/paper/6908-adversarial-ranking-for-language-generation.pdf" target="_blank" rel="noopener">More explanation — RankGAN</a>).</li>
