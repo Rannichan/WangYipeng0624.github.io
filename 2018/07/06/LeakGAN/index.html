@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="LeakGAN  IntroductionLeakGAN其实上就是SeqGAN的一个加强版，不同于SeqGAN仅利用Discriminator反馈的reward来训练Generator，LeakGAN还通过通过引入Discriminator隐层提取出的高级特征（leaked information）来指导Generator进行序列生成，使得模型的长序列生成性能得到显著的提高。此外LeakGAN的实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Yipeng&#39;s Blog">
+<meta property="og:url" content="http://wangyp.tech/2018/07/06/LeakGAN/index.html">
+<meta property="og:site_name" content="Yipeng&#39;s Blog">
+<meta property="og:description" content="LeakGAN  IntroductionLeakGAN其实上就是SeqGAN的一个加强版，不同于SeqGAN仅利用Discriminator反馈的reward来训练Generator，LeakGAN还通过通过引入Discriminator隐层提取出的高级特征（leaked information）来指导Generator进行序列生成，使得模型的长序列生成性能得到显著的提高。此外LeakGAN的实">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://wangyp.tech/2018/07/06/LeakGAN/model_structure.png">
+<meta property="og:updated_time" content="2018-07-06T12:07:35.158Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Yipeng&#39;s Blog">
+<meta name="twitter:description" content="LeakGAN  IntroductionLeakGAN其实上就是SeqGAN的一个加强版，不同于SeqGAN仅利用Discriminator反馈的reward来训练Generator，LeakGAN还通过通过引入Discriminator隐层提取出的高级特征（leaked information）来指导Generator进行序列生成，使得模型的长序列生成性能得到显著的提高。此外LeakGAN的实">
+<meta name="twitter:image" content="http://wangyp.tech/2018/07/06/LeakGAN/model_structure.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wangyp.tech/2018/07/06/LeakGAN/"/>
+
+
+
+
+
+  <title> | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yipeng's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">God prefers concision.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/06/LeakGAN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline"></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-06T20:07:34+08:00">
+                2018-07-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><em>LeakGAN</em></p>
+<hr>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>LeakGAN其实上就是SeqGAN的一个加强版，不同于SeqGAN仅利用Discriminator反馈的reward来训练Generator，LeakGAN还通过通过引入Discriminator隐层提取出的高级特征（leaked information）来指导Generator进行序列生成，使得模型的长序列生成性能得到显著的提高。此外LeakGAN的实验中还利用了若干trick解决了在训练SeqGAN中遇到的一些问题。 </p>
+<h1 id="核心问题-—-长文本生成"><a href="#核心问题-—-长文本生成" class="headerlink" title="核心问题 — 长文本生成"></a>核心问题 — 长文本生成</h1><p>我们之前用SeqGAN做过实验，这里给出几个长文本（20个单词）生成结果的示例：</p>
+<ul>
+<li>例子1</li>
+<li>例子2</li>
+<li>例子3</li>
+</ul>
+<p>从上面的例子可以看出其生成长文本的能力很差，主要原因在于：</p>
+<ol>
+<li>Reward 包含的信息量对于长文本生成来说太少</li>
+<li>Generator所采用的LSTM网咯并不具备长期记忆能力 </li>
+</ol>
+<p>为了解决第一个问题LeakGAN模型把Discriminator的隐层（卷积池化层）输出的feature map作为leaked information来训练Manager生成goal vector，Worker再利用goal vector包含的高阶信息（一般是语句结构上的信息）和Discriminator最后反馈的reward来进行序列生成，以此来解决reward信息量不够的问题。</p>
+<h2 id="Model-structure"><a href="#Model-structure" class="headerlink" title="Model structure"></a>Model structure</h2><p><img src="model_structure.png" alt="model_structure"></p>
+<p><strong>Discriminator-Feature Extractor CNN</strong></p>
+<p>$f_t=\digamma(S_t; \phi_f)$</p>
+<p><strong>Generator-Manager LSTM</strong></p>
+<p>$\hat{g<em>t}, h^m_t=M(f_t, h^m</em>{t-1}; \theta_m)$</p>
+<p>$g_t=\hat{g_t}/||\hat{g_t}||$    </p>
+<p>$w<em>t=W</em>{\psi}(\sum^c<em>{i=1}g</em>{t-i})$</p>
+<p><strong>Generator-Worker LSTM</strong></p>
+<p>$O<em>t, h_t^{w}=W(x_t, h^w</em>{t-1}; \theta_w)$</p>
+<p>$G<em>{\theta}(x</em>{t+1}|s_t)=softmax(O_t\centerdot w_t/\alpha)$</p>
+<h2 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h2><h3 id="Generator-training"><a href="#Generator-training" class="headerlink" title="Generator training"></a>Generator training</h3><p>Manager和Worker交替训练，训练其中一个的时候要固定另外一个的参数（当然Discriminator的参数这时也是固定的）。Manager被训练用来估计高层次的序列生成方向（advantageous directions），Worker被训练用来跟随Manager输出的序列生成方向（follow the directions）。</p>
+<p><strong>Gradient of Manager $\nabla_{\theta_m}g_t$</strong></p>
+<ul>
+<li><p><em>Expected reward under current policy</em></p>
+<p>$E[r_t]=Q(f_t, g_t)=Q_F(s_t, g_t)$</p>
+</li>
+<li><p><em>Cosine similarity between change of feature representation and goal vector</em></p>
+<p>$d<em>{cos}(f</em>{t+c}-f_t, g_t(\theta_m))$</p>
+</li>
+<li><p><em>Policy gradient</em></p>
+<p>$\nabla<em>{\theta_m}g_t=-Q_F(s_t, g_t)\nabla</em>{\theta<em>m}d</em>{cos}(f_{t+c}-f_t, g_t(\theta_m))$</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">self.goal_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(self.reward,</span><br><span class="line">                <span class="number">1</span>-tf.losses.cosine_distance(</span><br><span class="line">                  	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">                  	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>), </span><br><span class="line">                  	<span class="number">2</span></span><br><span class="line">                )</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size / self.step_size)</span><br></pre></td></tr></table></figure>
+<p><strong>Gradient of Worker</strong></p>
+<ul>
+<li><p><em>Intrinsic reward</em></p>
+<p>$r^I<em>t=\frac{1}{c}\sum^c</em>{i=1}d<em>{cos}(f_t-f</em>{t-i}, g_{t-i})$</p>
+</li>
+</ul>
+<ul>
+<li><p><em>Expected intrinsic reward over all possible actions</em></p>
+<p>$\sum<em>{x_t}r^I_tW(x_t|s</em>{t-1}; \theta_w)$</p>
+</li>
+<li><p><em>Expected intrinsic reward over all possible actions &amp; all current states</em></p>
+<p>$E<em>{s</em>{t-1}\sim G}[\sum<em>{x_t}r^I_tW(x_t|s</em>{t-1}; \theta_w)]$</p>
+</li>
+<li><p><em>Policy gradient</em></p>
+<p>$\nabla<em>{\theta_w}E</em>{s<em>{t-1}\sim G}[\sum</em>{x<em>t}r^I_tW(x_t|s</em>{t-1}; \theta_w)]$</p>
+<p>$=E<em>{s</em>{t-1}\sim G}[\sum<em>{x_t}r^I_t\nabla</em>{\theta_w}W]$</p>
+<p>$=E<em>{s</em>{t-1}\sim G}[\sum<em>{x_t}r^I_tW\frac{\nabla</em>{\theta_w}W}{W}]$</p>
+<p>$=E<em>{s</em>{t-1}\sim G, x<em>t\sim W}[r^I_t\nabla</em>{\theta_w}logW]$</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">self.Worker_Reward = <span class="number">1</span>-tf.losses.cosine_distance(tf.nn.l2_normalize(self.all_sub_features,<span class="number">2</span>),</span><br><span class="line">                                                 tf.nn.l2_normalize(self.all_sub_goals,<span class="number">2</span>), </span><br><span class="line">                                                 <span class="number">2</span>)</span><br><span class="line">self.worker_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(</span><br><span class="line">      	self.Worker_Reward,</span><br><span class="line">      	tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>) * \</span><br><span class="line">      	tf.log(tf.clip_by_value(tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), <span class="number">1e-20</span>, \			<span class="number">1.0</span>))</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
+<p><strong>Pretraining of Manager</strong></p>
+<p>$\hat{s_t}$ denotes states of real text</p>
+<p>$\hat{f_t}=F(\hat{s_t})$</p>
+<p>$\nabla^{pre}<em>{\theta_m}g_t = -\nabla</em>{\theta<em>m}d</em>{cos}(\hat{f_{t+c}}-\hat{f_t}, g_t(\theta_m))$</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sub_feature = tf.cond(i % step_size &gt; <span class="number">0</span>, </span><br><span class="line">                      <span class="keyword">lambda</span>: sub_feature,</span><br><span class="line">                      <span class="keyword">lambda</span>: tf.cond(i &gt; <span class="number">0</span>, </span><br><span class="line">                                      <span class="keyword">lambda</span>:sub_feature.write(i/step_size<span class="number">-1</span>,tf.subtract(feature,feature_array.read(i - step_size))),</span><br><span class="line">                    				  <span class="keyword">lambda</span>: sub_feature</span><br><span class="line">                                     )</span><br><span class="line">                     )</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.sub_feature = self.sub_feature.stack() <span class="comment"># seq_length x batch_size x num_filter</span></span><br><span class="line">self.sub_feature = tf.transpose(self.sub_feature, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.real_goal_array = self.real_goal_array.stack()</span><br><span class="line">self.real_goal_array = tf.transpose(self.real_goal_array, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.pretrain_goal_loss = -tf.reduce_sum(</span><br><span class="line">	<span class="number">1</span> - tf.losses.cosine_distance(</span><br><span class="line">    	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">      	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>),</span><br><span class="line">		<span class="number">2</span></span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size/self.step_size)</span><br></pre></td></tr></table></figure>
+<p><strong>Pretraining of Worker</strong></p>
+<p><em>MLE</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">g_predictions = tf.cond(</span><br><span class="line">                i&gt;<span class="number">0</span>,</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions.write(i<span class="number">-1</span>, tf.nn.softmax(x_logits)),</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions)</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.g_predictions = tf.transpose(self.g_predictions.stack(), perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.cross_entropy = tf.reduce_sum(</span><br><span class="line">  		self.g_predictions * tf.log(tf.clip_by_value(self.g_predictions, <span class="number">1e-20</span>, <span class="number">1.0</span>))</span><br><span class="line">	) / (self.batch_size * self.sequence_length * self.vocab_size)</span><br><span class="line">self.pretrain_worker_loss = -tf.reduce_sum(</span><br><span class="line">  		tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>)* \</span><br><span class="line">  		tf.log(tf.clip_by_value(</span><br><span class="line">        	tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), </span><br><span class="line">          	<span class="number">1e-20</span>, <span class="number">1.0</span>)</span><br><span class="line">        )</span><br><span class="line">	) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
+<h3 id="Discriminator-Training"><a href="#Discriminator-Training" class="headerlink" title="Discriminator Training"></a>Discriminator Training</h3><p><strong>Pretraining</strong></p>
+<p>Adam gradient descent with cross entropy loss </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'D_update'</span>):</span><br><span class="line">	self.D_l2_loss = tf.constant(<span class="number">0.0</span>)</span><br><span class="line">	self.FeatureExtractor_unit = self.FeatureExtractor()</span><br><span class="line">    <span class="comment"># Train for Discriminator</span></span><br><span class="line">    <span class="keyword">with</span> tf.variable_scope(<span class="string">"feature"</span>) <span class="keyword">as</span> self.feature_scope:</span><br><span class="line">    	D_feature = self.FeatureExtractor_unit(self.D_input_x,</span><br><span class="line">                                               self.dropout_keep_prob)</span><br><span class="line">        self.feature_scope.reuse_variables()</span><br><span class="line">    D_scores, D_predictions,self.ypred_for_auc = self.classification(D_feature)</span><br><span class="line">    losses = tf.nn.softmax_cross_entropy_with_logits(logits=D_scores, </span><br><span class="line">                                                     labels=self.D_input_y)</span><br><span class="line">    self.D_loss = tf.reduce_mean(losses) + self.l2_reg_lambda * self.D_l2_loss</span><br><span class="line">    self.D_params = [param <span class="keyword">for</span> param <span class="keyword">in</span> tf.trainable_variables() \ </span><br><span class="line">                     <span class="keyword">if</span> <span class="string">'Discriminator'</span> <span class="keyword">or</span> <span class="string">'FeatureExtractor'</span> <span class="keyword">in</span> param.name]</span><br><span class="line">    d_optimizer = tf.train.AdamOptimizer(<span class="number">5e-5</span>)</span><br><span class="line">    D_grads_and_vars = d_optimizer.compute_gradients(self.D_loss, </span><br><span class="line">                                                     self.D_params, </span><br><span class="line">                                                     aggregation_method=<span class="number">2</span>)</span><br><span class="line">    self.D_train_op = d_optimizer.apply_gradients(D_grads_and_vars)</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="Problem-2-—-Gradient-Vanishing"><a href="#Problem-2-—-Gradient-Vanishing" class="headerlink" title="Problem 2 — Gradient Vanishing"></a>Problem 2 — Gradient Vanishing</h1><p>There will be a severe gradient vanishing problem during the training of GAN when D is much stronger than  G. The reward is too small to update the parameters in G. Therefore it needs to  be rescaled.</p>
+<p><strong>Trick — Bootstrapped Rescaled Activation</strong></p>
+<p>Reward matrix is $R_{B*T}$ with batch-size B and sequence-length T.</p>
+<p>Rescale it by doing $R_{i,t} = \sigma(\delta\centerdot(0.5-\frac{rank(i)}{B}))$.</p>
+<ul>
+<li>Expectation and variance of the reward in each mini-batch are constant!</li>
+<li>In general, all ranking model can prevent the gradient vanishing problem (<a href="http://papers.nips.cc/paper/6908-adversarial-ranking-for-language-generation.pdf" target="_blank" rel="noopener">More explanation — RankGAN</a>).</li>
+</ul>
+<h1 id="Problem-3-—-Mode-Collapse"><a href="#Problem-3-—-Mode-Collapse" class="headerlink" title="Problem 3 — Mode Collapse"></a>Problem 3 — Mode Collapse</h1><p>These are several examples generated by SeqGAN I trained before:</p>
+<ul>
+<li>: ( data is stored in internal server and can not be fetched out</li>
+</ul>
+<p>As we can see, the generator is inclined to produce similar or  same sequences, which is called <strong>Mode Collapse</strong>. It is because… You can find more about mode collapse from <a href="https://www.quora.com/What-causes-mode-collapse-in-GANs" target="_blank" rel="noopener">Quora</a></p>
+<p><strong>Trick — Interleaved Training</strong></p>
+<p>Instead of using full GAN training (unsupervised), it adopt a MLE training (supervised) after 15 epochs of GAN training to prevent the Worker get into some bad local minimums.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> total_batch % <span class="number">15</span> == <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">for</span> epoch <span class="keyword">in</span> xrange(<span class="number">1</span>):</span><br><span class="line">    loss = pre_train_epoch(sess, leakgan, gen_data_loader)</span><br></pre></td></tr></table></figure>
+<h1 id="Problem-4-—-Balance-the-exploration-and-exploitation"><a href="#Problem-4-—-Balance-the-exploration-and-exploitation" class="headerlink" title="Problem 4* — Balance the exploration and exploitation"></a>Problem 4* — Balance the exploration and exploitation</h1><p><strong>Trick — Temperature Control</strong></p>
+<p>Higher temperature for training the model — exploration</p>
+<p>Lower temperature for generating samples — exploitation</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/29/SeqGAN/" rel="next" title="用GAN生成对抗网络和RL强化学习手段生成自然语言序列">
+                <i class="fa fa-chevron-left"></i> 用GAN生成对抗网络和RL强化学习手段生成自然语言序列
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <img class="site-author-image" itemprop="image"
+              src="/images/avatar.jpg"
+              alt="Wang Yipeng" />
+          
+            <p class="site-author-name" itemprop="name">Wang Yipeng</p>
+            <p class="site-description motion-element" itemprop="description">Management of skills and knowledge.</p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#核心问题-—-长文本生成"><span class="nav-number">2.</span> <span class="nav-text">核心问题 — 长文本生成</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Model-structure"><span class="nav-number">2.1.</span> <span class="nav-text">Model structure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Model-training"><span class="nav-number">2.2.</span> <span class="nav-text">Model training</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Generator-training"><span class="nav-number">2.2.1.</span> <span class="nav-text">Generator training</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Discriminator-Training"><span class="nav-number">2.2.2.</span> <span class="nav-text">Discriminator Training</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Problem-2-—-Gradient-Vanishing"><span class="nav-number">3.</span> <span class="nav-text">Problem 2 — Gradient Vanishing</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Problem-3-—-Mode-Collapse"><span class="nav-number">4.</span> <span class="nav-text">Problem 3 — Mode Collapse</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Problem-4-—-Balance-the-exploration-and-exploitation"><span class="nav-number">5.</span> <span class="nav-text">Problem 4* — Balance the exploration and exploitation</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wang Yipeng</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" href="https://hexo.io">Hexo</a></div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.2</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="custom_mathjax_source">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+</html>
