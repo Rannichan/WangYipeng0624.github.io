@@ -411,14 +411,14 @@
 <p>To to this, we need to introduce <strong><em>coherence score</em></strong>.</p>
 <p><strong><em>Coherence score</em></strong> is the sum of all relations (edge in the graph) that our model agrees with. </p>
 <p>Every edge is weighted by its <strong><em>confidence</em></strong></p>
-
+<img src="/2018/07/26/NarrativeChains/example1.jpg">
 <p><strong>[*Notice]</strong></p>
 <p>In real practice, the mathematical definition of <em><strong>confidence</strong></em> will be more complex, but here I just simplify it to make it more understandable. Please check <a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">the original paper</a> for formal definition.  </p>
 <h2 id="Stage-3-Discrete-narrative-event-chains"><a href="#Stage-3-Discrete-narrative-event-chains" class="headerlink" title="Stage 3 Discrete narrative event chains"></a>Stage 3 Discrete narrative event chains</h2><p>Up to now, we have got <strong><em>narrative relations</em></strong> across all possible events and their <strong><em>temporal order</em></strong> (i.e. many partially ordered narrative event chains).</p>
 <p>But they are still discrete list and cannot reproduce explicit self-contained scripts.</p>
 <p>However, it is totally worthwhile to construct discrete narrative chains, because it can be used to check <strong><em>whether the combination of events learning and ordering has produced script-like structures</em></strong> </p>
 <p>And, to get a whole combination of events, we only need to apply a <strong><em>cluster algorithm</em></strong> over <strong><em>all events</em></strong> based on <strong><em>PMI score</em></strong> we got before, and use approach stated in stage 2 to extract “before” relation among them.</p>
-
+<img src="/2018/07/26/NarrativeChains/example2.jpg">
 <h1 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h1><p>This the very basic and important work in the area of NLP. It provides a new idea for “language generation”, “question answering”, “frame induction” and many other areas.</p>
 <p><a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">*original paper: “Unsupervised Learning of Narrative Event Chains”</a></p>
 
