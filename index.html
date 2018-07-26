@@ -258,6 +258,217 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/26/NarrativeChains/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/26/NarrativeChains/" itemprop="url">Narrative Event Chains</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-26T07:42:29+08:00">
+                2018-07-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h1><p>We can always break a narrative into some events, for example:</p>
+<p>given a narrative  <em><strong>“John entered the restaurant. He sat down, and ordered a meal. He ate…”</strong></em></p>
+<p>it can breaks into events looks like</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">enter =&gt; sit =&gt; order =&gt; eat</span><br></pre></td></tr></table></figure>
+<p>By doing a simple statistic, we can simply abstract some valuable information of the narrative like:</p>
+<p> <strong><em>Given a current event-A, how much is event-B likely to occur next?</em></strong></p>
+<p>But this is not informative enough,<del>and too much of verbs barely exceed chance performance</del>!</p>
+<h1 id="Insight"><a href="#Insight" class="headerlink" title="Insight"></a>Insight</h1><p>Don’t look at all verbs, just focus on those mentioning the “key actor” —  <em><strong>protagonist</strong></em></p>
+<p>Instead of using verbs only, but pair verbs with their protagonist.</p>
+<h1 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h1><p>In total, our task is to extract events that  constitute <em><strong>narrative chains</strong></em></p>
+<ul>
+<li><em><strong>Narrative chain</strong></em> is a <em><strong>partially ordered</strong></em> set of <em><strong>narrative events</strong></em></li>
+<li><em><strong>Narrative event</strong></em> is a tuple of  <em><strong>“event” </strong></em> and <em><strong>“participants” </strong></em></li>
+<li><em><strong>Partially ordering</strong></em> means some narrative event is <em><strong>before</strong></em> another one</li>
+<li>In our circumstance, the “event” is represented as a <em><strong>verb</strong></em>, the “participants” is represented as a <em><strong>typed dependency</strong></em> </li>
+</ul>
+<p>If we use <script type="math/tex">e_i=(verb, dependency)</script> to denote a narrative event,</p>
+<p>the narrative chain should be <script type="math/tex">\{e_1, e_2, ..., e_n\}</script></p>
+<p>$B(e_i, e_j) = True$ if <script type="math/tex">e_i</script> occurs strictly before <script type="math/tex">e_j</script></p>
+<h2 id="Stage-1-Learning-narrative-relations"><a href="#Stage-1-Learning-narrative-relations" class="headerlink" title="Stage 1 Learning narrative relations"></a>Stage 1 Learning narrative relations</h2><p><em><strong>Unsupervised cluster</strong></em></p>
+<ol>
+<li><p><strong>Pairwise relations between events</strong></p>
+<p>Given a list of observed <em><strong>narrative events</strong></em>, we can approximate the <em><strong>point-wise mutual information (PMI)</strong></em> by:</p>
+<script type="math/tex; mode=display">prob[(verb_i, X)AND(verb_j, X)]=\frac{num_X[(verb_i, X)AND(verb_j, X)]}{sum_{i,j}\{num_X[(verb_i, X)AND(verb_j, X)]\}}</script><script type="math/tex; mode=display">PMI[(verb_i, X), (verb_j, X)]=log\frac{prob[(verb_i, X) AND(verb_j, X)]}{prob[(verb_i, X)]prob[(verb_j, X)]}</script><p><em><strong>PMI</strong></em> describes: given a event (with a argument), how “unusual” to see another event even (with the same argument)</p>
+</li>
+<li><p><strong>Global narrative score</strong></p>
+<p>Given all narrative events in a document, we can find next most likely event to occur by maximizing:</p>
+<script type="math/tex; mode=display">max_{0<j<m}\sum^n_{i=0}PMI(e_i, f_j)</script><p><em><strong>n</strong></em> is the number of given events in our chain, and <em><strong>m</strong></em> is the number of events in our training corpus.</p>
+<p>Such a <em><strong>global narrative score</strong></em> describes: given n events (with a argument), how “unusual” to see another event even (with the same argument)</p>
+<p><strong>[Example]</strong></p>
+<p>Three narrative events and the six most likely events to include in the same chain (actually, is set, because it is not ordering now)</p>
+<blockquote>
+<p>   <strong>Known events</strong></p>
+<p>   (pleaded subj)</p>
+<p>   (admits subj)</p>
+<p>   (convicted obj)</p>
+<p>   <strong>Likely events</strong></p>
+<p>   (sentenced obj) 0.89</p>
+<p>   (paroled obj) 0.76</p>
+<p>   (fired obj) 0.75</p>
+<p>   (indicted obj) 0.74</p>
+<p>   (fined obj) 0.73</p>
+<p>   (denied subj) 0.73</p>
+</blockquote>
+</li>
+<li><p><strong>Evaluation</strong></p>
+<p><em><strong>Narrative cloze</strong></em> is a sequence of narrative events in a document, from which <em><strong>one event</strong></em> has been removed, the task is to <em><strong>predict the missing (verb, typed dependency)</strong></em> </p>
+<p><strong>[Example]</strong></p>
+<p>Given a document and focus <em><strong>McCann</strong></em> as protagonist:</p>
+<blockquote>
+<p><em><strong>McCann</strong></em> <em>threw</em> two interceptions early.</p>
+<p>Toledo <em>pulled</em> <strong><em>McCann</em></strong> aside and <em>told</em> <strong><em>him</em></strong> <strong><em>he’d</em></strong> <em>start</em>.</p>
+<p><strong><em>McCann</em></strong> quickly <em>completed</em> his first two passes.</p>
+</blockquote>
+<p>We got five events:</p>
+<blockquote>
+<p>(threw subj)</p>
+<p>(pulled obj)</p>
+<p>(told obj)</p>
+<p>(start subj)</p>
+<p>(completed subj) </p>
+</blockquote>
+<p>We remove the first one <strong><em>(threw subj)</em></strong> and use the remaining four events to rank the missing event (chosen from extra <strong><em>training data</em></strong>)</p>
+</li>
+</ol>
+<h2 id="Stage-2-Ordering-narrative-events"><a href="#Stage-2-Ordering-narrative-events" class="headerlink" title="Stage 2 Ordering narrative events"></a>Stage 2 Ordering narrative events</h2><p><em><strong>Supervised classification</strong></em></p>
+<p>class 1. <strong><em>before</em></strong></p>
+<p>class 2. <strong><em>other</em></strong></p>
+<p>Each pair of <strong><em>narrative events</em></strong> in a document that share a coreferring argument is treated as a separate classification task.</p>
+<p>We count the number of labeled <strong><em>before</em></strong> relations between each <strong><em>narrative event</em></strong>.</p>
+<p>Then build a database of such a count.</p>
+<p>We can measure the <strong><em>confidence</em></strong> of <strong><em>“event-X before event-Y”</em></strong> by looking up the database and compute <script type="math/tex">num(B(X, Y)=True)/num(B(Y, X)=True)</script></p>
+<p><strong>[Evaluation]</strong></p>
+<p>Given a set of narrative events: </p>
+<ul>
+<li><strong>Chain 1:</strong> These events are hand-labeled for a partial ordering </li>
+<li><strong>Chain 2:</strong> These events are sorted in random order</li>
+</ul>
+<p>We gonna to decide which of these two chains is more coherent.</p>
+<p>To to this, we need to introduce <strong><em>coherence score</em></strong>.</p>
+<p><strong><em>Coherence score</em></strong> is the sum of all relations (edge in the graph) that our model agrees with. </p>
+<p>Every edge is weighted by its <strong><em>confidence</em></strong></p>
+
+<p><strong>[*Notice]</strong></p>
+<p>In real practice, the mathematical definition of <em><strong>confidence</strong></em> will be more complex, but here I just simplify it to make it more understandable. Please check <a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">the original paper</a> for formal definition.  </p>
+<h2 id="Stage-3-Discrete-narrative-event-chains"><a href="#Stage-3-Discrete-narrative-event-chains" class="headerlink" title="Stage 3 Discrete narrative event chains"></a>Stage 3 Discrete narrative event chains</h2><p>Up to now, we have got <strong><em>narrative relations</em></strong> across all possible events and their <strong><em>temporal order</em></strong> (i.e. many partially ordered narrative event chains).</p>
+<p>But they are still discrete list and cannot reproduce explicit self-contained scripts.</p>
+<p>However, it is totally worthwhile to construct discrete narrative chains, because it can be used to check <strong><em>whether the combination of events learning and ordering has produced script-like structures</em></strong> </p>
+<p>And, to get a whole combination of events, we only need to apply a <strong><em>cluster algorithm</em></strong> over <strong><em>all events</em></strong> based on <strong><em>PMI score</em></strong> we got before, and use approach stated in stage 2 to extract “before” relation among them.</p>
+
+<h1 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h1><p>This the very basic and important work in the area of NLP. It provides a new idea for “language generation”, “question answering”, “frame induction” and many other areas.</p>
+<p><a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">*original paper: “Unsupervised Learning of Narrative Event Chains”</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/06/LeakGAN/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -948,7 +1159,7 @@ corpora.Dictionary.load()
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">posts</span>
               </a>
             </div>

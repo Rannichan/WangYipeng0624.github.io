@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="en">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="NLP," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="BackgroundWe can always break a narrative into some events, for example: given a narrative  “John entered the restaurant. He sat down, and ordered a meal. He ate…” it can breaks into events looks like">
+<meta name="keywords" content="NLP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Narrative Event Chains">
+<meta property="og:url" content="http://wangyp.tech/2018/07/26/NarrativeChains/index.html">
+<meta property="og:site_name" content="Yipeng&#39;s Blog">
+<meta property="og:description" content="BackgroundWe can always break a narrative into some events, for example: given a narrative  “John entered the restaurant. He sat down, and ordered a meal. He ate…” it can breaks into events looks like">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2018-07-26T00:14:50.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Narrative Event Chains">
+<meta name="twitter:description" content="BackgroundWe can always break a narrative into some events, for example: given a narrative  “John entered the restaurant. He sat down, and ordered a meal. He ate…” it can breaks into events looks like">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wangyp.tech/2018/07/26/NarrativeChains/"/>
+
+
+
+
+
+  <title>Narrative Event Chains | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yipeng's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">God prefers concision.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/26/NarrativeChains/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Narrative Event Chains</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-26T07:42:29+08:00">
+                2018-07-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h1><p>We can always break a narrative into some events, for example:</p>
+<p>given a narrative  <em><strong>“John entered the restaurant. He sat down, and ordered a meal. He ate…”</strong></em></p>
+<p>it can breaks into events looks like</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">enter =&gt; sit =&gt; order =&gt; eat</span><br></pre></td></tr></table></figure>
+<p>By doing a simple statistic, we can simply abstract some valuable information of the narrative like:</p>
+<p> <strong><em>Given a current event-A, how much is event-B likely to occur next?</em></strong></p>
+<p>But this is not informative enough,<del>and too much of verbs barely exceed chance performance</del>!</p>
+<h1 id="Insight"><a href="#Insight" class="headerlink" title="Insight"></a>Insight</h1><p>Don’t look at all verbs, just focus on those mentioning the “key actor” —  <em><strong>protagonist</strong></em></p>
+<p>Instead of using verbs only, but pair verbs with their protagonist.</p>
+<h1 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h1><p>In total, our task is to extract events that  constitute <em><strong>narrative chains</strong></em></p>
+<ul>
+<li><em><strong>Narrative chain</strong></em> is a <em><strong>partially ordered</strong></em> set of <em><strong>narrative events</strong></em></li>
+<li><em><strong>Narrative event</strong></em> is a tuple of  <em><strong>“event” </strong></em> and <em><strong>“participants” </strong></em></li>
+<li><em><strong>Partially ordering</strong></em> means some narrative event is <em><strong>before</strong></em> another one</li>
+<li>In our circumstance, the “event” is represented as a <em><strong>verb</strong></em>, the “participants” is represented as a <em><strong>typed dependency</strong></em> </li>
+</ul>
+<p>If we use <script type="math/tex">e_i=(verb, dependency)</script> to denote a narrative event,</p>
+<p>the narrative chain should be <script type="math/tex">\{e_1, e_2, ..., e_n\}</script></p>
+<p>$B(e_i, e_j) = True$ if <script type="math/tex">e_i</script> occurs strictly before <script type="math/tex">e_j</script></p>
+<h2 id="Stage-1-Learning-narrative-relations"><a href="#Stage-1-Learning-narrative-relations" class="headerlink" title="Stage 1 Learning narrative relations"></a>Stage 1 Learning narrative relations</h2><p><em><strong>Unsupervised cluster</strong></em></p>
+<ol>
+<li><p><strong>Pairwise relations between events</strong></p>
+<p>Given a list of observed <em><strong>narrative events</strong></em>, we can approximate the <em><strong>point-wise mutual information (PMI)</strong></em> by:</p>
+<script type="math/tex; mode=display">prob[(verb_i, X)AND(verb_j, X)]=\frac{num_X[(verb_i, X)AND(verb_j, X)]}{sum_{i,j}\{num_X[(verb_i, X)AND(verb_j, X)]\}}</script><script type="math/tex; mode=display">PMI[(verb_i, X), (verb_j, X)]=log\frac{prob[(verb_i, X) AND(verb_j, X)]}{prob[(verb_i, X)]prob[(verb_j, X)]}</script><p><em><strong>PMI</strong></em> describes: given a event (with a argument), how “unusual” to see another event even (with the same argument)</p>
+</li>
+<li><p><strong>Global narrative score</strong></p>
+<p>Given all narrative events in a document, we can find next most likely event to occur by maximizing:</p>
+<script type="math/tex; mode=display">max_{0<j<m}\sum^n_{i=0}PMI(e_i, f_j)</script><p><em><strong>n</strong></em> is the number of given events in our chain, and <em><strong>m</strong></em> is the number of events in our training corpus.</p>
+<p>Such a <em><strong>global narrative score</strong></em> describes: given n events (with a argument), how “unusual” to see another event even (with the same argument)</p>
+<p><strong>[Example]</strong></p>
+<p>Three narrative events and the six most likely events to include in the same chain (actually, is set, because it is not ordering now)</p>
+<blockquote>
+<p>   <strong>Known events</strong></p>
+<p>   (pleaded subj)</p>
+<p>   (admits subj)</p>
+<p>   (convicted obj)</p>
+<p>   <strong>Likely events</strong></p>
+<p>   (sentenced obj) 0.89</p>
+<p>   (paroled obj) 0.76</p>
+<p>   (fired obj) 0.75</p>
+<p>   (indicted obj) 0.74</p>
+<p>   (fined obj) 0.73</p>
+<p>   (denied subj) 0.73</p>
+</blockquote>
+</li>
+<li><p><strong>Evaluation</strong></p>
+<p><em><strong>Narrative cloze</strong></em> is a sequence of narrative events in a document, from which <em><strong>one event</strong></em> has been removed, the task is to <em><strong>predict the missing (verb, typed dependency)</strong></em> </p>
+<p><strong>[Example]</strong></p>
+<p>Given a document and focus <em><strong>McCann</strong></em> as protagonist:</p>
+<blockquote>
+<p><em><strong>McCann</strong></em> <em>threw</em> two interceptions early.</p>
+<p>Toledo <em>pulled</em> <strong><em>McCann</em></strong> aside and <em>told</em> <strong><em>him</em></strong> <strong><em>he’d</em></strong> <em>start</em>.</p>
+<p><strong><em>McCann</em></strong> quickly <em>completed</em> his first two passes.</p>
+</blockquote>
+<p>We got five events:</p>
+<blockquote>
+<p>(threw subj)</p>
+<p>(pulled obj)</p>
+<p>(told obj)</p>
+<p>(start subj)</p>
+<p>(completed subj) </p>
+</blockquote>
+<p>We remove the first one <strong><em>(threw subj)</em></strong> and use the remaining four events to rank the missing event (chosen from extra <strong><em>training data</em></strong>)</p>
+</li>
+</ol>
+<h2 id="Stage-2-Ordering-narrative-events"><a href="#Stage-2-Ordering-narrative-events" class="headerlink" title="Stage 2 Ordering narrative events"></a>Stage 2 Ordering narrative events</h2><p><em><strong>Supervised classification</strong></em></p>
+<p>class 1. <strong><em>before</em></strong></p>
+<p>class 2. <strong><em>other</em></strong></p>
+<p>Each pair of <strong><em>narrative events</em></strong> in a document that share a coreferring argument is treated as a separate classification task.</p>
+<p>We count the number of labeled <strong><em>before</em></strong> relations between each <strong><em>narrative event</em></strong>.</p>
+<p>Then build a database of such a count.</p>
+<p>We can measure the <strong><em>confidence</em></strong> of <strong><em>“event-X before event-Y”</em></strong> by looking up the database and compute <script type="math/tex">num(B(X, Y)=True)/num(B(Y, X)=True)</script></p>
+<p><strong>[Evaluation]</strong></p>
+<p>Given a set of narrative events: </p>
+<ul>
+<li><strong>Chain 1:</strong> These events are hand-labeled for a partial ordering </li>
+<li><strong>Chain 2:</strong> These events are sorted in random order</li>
+</ul>
+<p>We gonna to decide which of these two chains is more coherent.</p>
+<p>To to this, we need to introduce <strong><em>coherence score</em></strong>.</p>
+<p><strong><em>Coherence score</em></strong> is the sum of all relations (edge in the graph) that our model agrees with. </p>
+<p>Every edge is weighted by its <strong><em>confidence</em></strong></p>
+
+<p><strong>[*Notice]</strong></p>
+<p>In real practice, the mathematical definition of <em><strong>confidence</strong></em> will be more complex, but here I just simplify it to make it more understandable. Please check <a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">the original paper</a> for formal definition.  </p>
+<h2 id="Stage-3-Discrete-narrative-event-chains"><a href="#Stage-3-Discrete-narrative-event-chains" class="headerlink" title="Stage 3 Discrete narrative event chains"></a>Stage 3 Discrete narrative event chains</h2><p>Up to now, we have got <strong><em>narrative relations</em></strong> across all possible events and their <strong><em>temporal order</em></strong> (i.e. many partially ordered narrative event chains).</p>
+<p>But they are still discrete list and cannot reproduce explicit self-contained scripts.</p>
+<p>However, it is totally worthwhile to construct discrete narrative chains, because it can be used to check <strong><em>whether the combination of events learning and ordering has produced script-like structures</em></strong> </p>
+<p>And, to get a whole combination of events, we only need to apply a <strong><em>cluster algorithm</em></strong> over <strong><em>all events</em></strong> based on <strong><em>PMI score</em></strong> we got before, and use approach stated in stage 2 to extract “before” relation among them.</p>
+
+<h1 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h1><p>This the very basic and important work in the area of NLP. It provides a new idea for “language generation”, “question answering”, “frame induction” and many other areas.</p>
+<p><a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">*original paper: “Unsupervised Learning of Narrative Event Chains”</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/NLP/" rel="tag"># NLP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/06/LeakGAN/" rel="next" title="LeakGAN - a Long Text Generating Model">
+                <i class="fa fa-chevron-left"></i> LeakGAN - a Long Text Generating Model
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <img class="site-author-image" itemprop="image"
+              src="/images/avatar.jpg"
+              alt="Wang Yipeng" />
+          
+            <p class="site-author-name" itemprop="name">Wang Yipeng</p>
+            <p class="site-description motion-element" itemprop="description">Management of skills and knowledge.</p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Background"><span class="nav-number">1.</span> <span class="nav-text">Background</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Insight"><span class="nav-number">2.</span> <span class="nav-text">Insight</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Task"><span class="nav-number">3.</span> <span class="nav-text">Task</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stage-1-Learning-narrative-relations"><span class="nav-number">3.1.</span> <span class="nav-text">Stage 1 Learning narrative relations</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stage-2-Ordering-narrative-events"><span class="nav-number">3.2.</span> <span class="nav-text">Stage 2 Ordering narrative events</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stage-3-Discrete-narrative-event-chains"><span class="nav-number">3.3.</span> <span class="nav-text">Stage 3 Discrete narrative event chains</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Conclusion"><span class="nav-number">4.</span> <span class="nav-text">Conclusion</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wang Yipeng</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" href="https://hexo.io">Hexo</a></div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.2</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="custom_mathjax_source">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
