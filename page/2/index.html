@@ -98,7 +98,7 @@
 <meta name="description" content="Management of skills and knowledge.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Yipeng&#39;s Blog">
-<meta property="og:url" content="http://wangyp.tech/archives/2018/index.html">
+<meta property="og:url" content="http://wangyp.tech/page/2/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
 <meta property="og:description" content="Management of skills and knowledge.">
 <meta property="og:locale" content="en">
@@ -134,13 +134,13 @@
 
 
 
-  <link rel="canonical" href="http://wangyp.tech/archives/2018/"/>
+  <link rel="canonical" href="http://wangyp.tech/page/2/"/>
 
 
 
 
 
-  <title>Archive | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -159,7 +159,8 @@
     
   
 
-  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-archive">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left 
+  page-home">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -242,185 +243,147 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
+  <section id="posts" class="posts-expand">
+    
+      
+
+  
 
   
   
   
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
 
-      <span class="archive-page-counter">
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2017/09/17/tensorflow instruction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
         
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/09/17/tensorflow instruction/" itemprop="url">Ubuntu 下 Tensorflow-CUDA(GPU加速) 环境搭建</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-09-17T13:34:52+08:00">
+                2017-09-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
         
           
-        
-        Um..! 6 posts in total. Keep on posting.
-      </span>
+            <p>本文并不是一个教程，step by step 的教网络上有很多，然而我想说的是：turn to offical guide first!!!，我曾了为了搭建 tensorflow-gpu 的环境参考了很多网络上的教程，失败到吐血，各种莫名其妙的错误，最终发现，目前（2017/9）的 tesorflow-gpu 只支持6.X版本cuDNN加速库（我错装成了最新版本，虽然是我蠢，但是很少有教程会强调这点），而所有地细节在官方文档中都能找到明确地答案，所以大家不要偷懒，直接去看官方文档吧，我会在下面贴出所有相关地地址。</p>
+<p>因为在 WIN10 上 CUDA 需要 VS2015 运行环境[1]，而我为了开发 UWP 已经安装了 VS2017，所以VS C++ 2015 runtime 一直无法安装，又不想卸载 VS2017，于是就转战 Ubuntu 16.04 LTS 了。</p>
+<p>三步走：</p>
+<ul>
+<li>下载安装 CUDA</li>
+<li>下载安装 cuDNN (虽然是选用加速库，但 Tensorflow 要求必须安装，不然报错)</li>
+<li>安装 tensorflow-gpu</li>
+</ul>
+<p><strong>但要先去看 tensorflow 的官方安装指南，了解整个过程与要求。</strong></p>
+<h4 id="下载安装-CUDA"><a href="#下载安装-CUDA" class="headerlink" title="下载安装 CUDA"></a>下载安装 CUDA</h4><p><a href="http://docs.nvidia.com/cuda/cuda-installation-guide-linux/#axzz4VZnqTJ2A" target="_blank" rel="noopener">CUDA for Linux 官方文档</a><br><a href="https://developer.nvidia.com/cuda-downloads" target="_blank" rel="noopener">CUDA 下载地址</a><br>你知道应该选择哪个进行下载</p>
+<h4 id="下载安装-cuDNN"><a href="#下载安装-cuDNN" class="headerlink" title="下载安装 cuDNN"></a>下载安装 cuDNN</h4><p><a href="http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#installlinux" target="_blank" rel="noopener">cuDNN 官方文档</a><br><a href="https://developer.nvidia.com/rdp/cudnn-download" target="_blank" rel="noopener">cuDNN 下载地址</a><br>千万不要下载错了</p>
+<h4 id="安装-tensorflow-gpu"><a href="#安装-tensorflow-gpu" class="headerlink" title="安装 tensorflow-gpu"></a>安装 tensorflow-gpu</h4><p><a href="https://www.tensorflow.org/install/" target="_blank" rel="noopener">tensorflow 官方安装指南</a>(需要翻墙…)<br>另外tensorflow官网下又论坛，可以解决很多实际操作中遇到的问题。</p>
+<p>最后如果你运行并通过了 tensorflow 官方安装指南下的测试程序，看到你的显卡信息，基本上就算是成功了。</p>
+<p>[1] 实际上，后来我又在 WIN10 下尝试搭建环境，虽然 CUDA 在安装的时候警告说找不到支持的编译器 (VS2015)，但依然可以强行安装，最后也可以通过 tensorflow 的测试程序，并且我用 Python 跑了一个 CNN 确实可以加速，难道是因为 anaconda 中自带的 VS2015 runtime… 反正能用就好了</p>
 
-      
-
-        
-        
-        
-
-        
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2018">2018</h1>
-          </div>
         
-        
-
-        
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/07/29/What gonna happen next/" itemprop="url">
-              
-                <span itemprop="name">What gonna happen next?</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-07-29T17:16:45+08:00"
-              content="2018-07-29" >
-          07-29
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/07/26/NarrativeChains/" itemprop="url">
-              
-                <span itemprop="name">Narrative Event Chains</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-07-26T07:42:29+08:00"
-              content="2018-07-26" >
-          07-26
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/07/06/LeakGAN/" itemprop="url">
-              
-                <span itemprop="name">LeakGAN - a Long Text Generating Model</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-07-06T20:07:34+08:00"
-              content="2018-07-06" >
-          07-06
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/06/29/SeqGAN/" itemprop="url">
-              
-                <span itemprop="name">用GAN生成对抗网络和RL强化学习手段生成自然语言序列</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-06-29T12:32:43+08:00"
-              content="2018-06-29" >
-          06-29
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
     </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
   </div>
   
   
   
+  </article>
+
+
+    
+  </section>
 
   
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
 
 
 
