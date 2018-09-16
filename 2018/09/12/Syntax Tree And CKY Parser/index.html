@@ -79,7 +79,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="NLP,Event prediction," />
+  <meta name="keywords" content="NLP,CS544," />
 
 
 
@@ -95,20 +95,21 @@
 
 
 
-<meta name="description" content="Event Prediction Based on “Event Embedding”Original paper by Mark Granroth-Wilding and Stephen Clark: What Happens Next? Event Prediction Using a Compositional Neural Network Model RecallLet’s recall">
-<meta name="keywords" content="NLP,Event prediction">
+<meta name="description" content="The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the">
+<meta name="keywords" content="NLP,CS544">
 <meta property="og:type" content="article">
-<meta property="og:title" content="What gonna happen next?">
-<meta property="og:url" content="http://wangyp.tech/2018/07/29/What gonna happen next/index.html">
+<meta property="og:title" content="Syntax Tree And CKY Parser [CS544 USC]">
+<meta property="og:url" content="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
-<meta property="og:description" content="Event Prediction Based on “Event Embedding”Original paper by Mark Granroth-Wilding and Stephen Clark: What Happens Next? Event Prediction Using a Compositional Neural Network Model RecallLet’s recall">
+<meta property="og:description" content="The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the">
 <meta property="og:locale" content="en">
-<meta property="og:image" content="http://wangyp.tech/2018/07/29/What%20gonna%20happen%20next/event_comp.jpg">
-<meta property="og:updated_time" content="2018-07-29T15:19:06.696Z">
+<meta property="og:image" content="https://wikimedia.org/api/rest_v1/media/math/render/svg/2543ae859dd620f858299855868ae6c2ed066323">
+<meta property="og:image" content="http://wangyp.tech/2018/09/12/Syntax%20Tree%20And%20CKY%20Parser/syntax_tree.jpg">
+<meta property="og:updated_time" content="2018-09-16T06:32:40.117Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="What gonna happen next?">
-<meta name="twitter:description" content="Event Prediction Based on “Event Embedding”Original paper by Mark Granroth-Wilding and Stephen Clark: What Happens Next? Event Prediction Using a Compositional Neural Network Model RecallLet’s recall">
-<meta name="twitter:image" content="http://wangyp.tech/2018/07/29/What%20gonna%20happen%20next/event_comp.jpg">
+<meta name="twitter:title" content="Syntax Tree And CKY Parser [CS544 USC]">
+<meta name="twitter:description" content="The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the">
+<meta name="twitter:image" content="https://wikimedia.org/api/rest_v1/media/math/render/svg/2543ae859dd620f858299855868ae6c2ed066323">
 
 
 
@@ -138,13 +139,13 @@
 
 
 
-  <link rel="canonical" href="http://wangyp.tech/2018/07/29/What gonna happen next/"/>
+  <link rel="canonical" href="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/"/>
 
 
 
 
 
-  <title>What gonna happen next? | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>Syntax Tree And CKY Parser [CS544 USC] | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -261,7 +262,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/29/What gonna happen next/">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Wang Yipeng">
@@ -278,7 +279,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">What gonna happen next?</h1>
+          <h1 class="post-title" itemprop="name headline">Syntax Tree And CKY Parser [CS544 USC]</h1>
         
 
         <div class="post-meta">
@@ -290,8 +291,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-29T02:16:45-07:00">
-                2018-07-29
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-12T23:24:56-07:00">
+                2018-09-12
               </time>
             
 
@@ -328,41 +329,65 @@
       
 
       
-        <h1 id="Event-Prediction-Based-on-“Event-Embedding”"><a href="#Event-Prediction-Based-on-“Event-Embedding”" class="headerlink" title="Event Prediction Based on “Event Embedding”"></a>Event Prediction Based on “Event Embedding”</h1><p><a href="https://aaai.org/ocs/index.php/AAAI/AAAI16/paper/view/11995/12015" target="_blank" rel="noopener">Original paper by Mark Granroth-Wilding and Stephen Clark: What Happens Next? Event Prediction Using a Compositional Neural Network Model</a></p>
-<h1 id="Recall"><a href="#Recall" class="headerlink" title="Recall"></a>Recall</h1><p>Let’s recall the original work of Chambers and Jurafsky in 2008. In that <a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">paper</a>, an <strong><em>event</em></strong> is defined as a pair of the predicate <strong><em>(verb)</em></strong> and  the grammatical dependency <strong><em>(subj, obj, or iobj)</em></strong>. So an event is expressed in a form of <strong><em>predicate-GR</em></strong>.</p>
-<p>C&amp;J looks only at the co-occurrences of predicate-GRs. The prediction is totally based on statistical analysis. But there are still some obvious problems:</p>
-<ul>
-<li>A lot of information is lost when we transfer an entity of an event into GR. The meaning of an event could be drastically changed by its entities. <strong><em>Eg1. (perform, play<subj>) VS. (perform surgery<subj>); Eg2. (go, on holiday<subj>) VS. (go, to church<subj>)</subj></subj></subj></subj></em></strong>  </li>
-<li>The model are not able to assign scores to unobserved pairs. And only events with frequent predicates could be scored accurately.</li>
-</ul>
-<h1 id="Insight"><a href="#Insight" class="headerlink" title="Insight"></a>Insight</h1><p>Inspired by the paper word2vec (2013), Two authors (Mark &amp; Stephen) use contininuous vector embeddings of words and events to replace the original definition on an event (predicate-GR). Then M&amp;S train a neural model to score any input event-vector pairs.</p>
-<h1 id="Embedding"><a href="#Embedding" class="headerlink" title="Embedding"></a>Embedding</h1><p><strong>Verb-only model</strong></p>
-<p>M&amp;S represent an event using the vector <em>(MIKOLOV-VERB)</em> for its verb. Vectors of events are summed up as the description of the context (i.e the event chain we reffered in my last post). Finally, compute the cosine similarity between the context and candidate event.</p>
+        <p>The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the grammer structure of a sentence can help us understanding  it in some degree. Therefore, parsing a sentence into a syntax tree will be a very valuable work.</p>
+<h1 id="CFG-and-Syntax-Tree"><a href="#CFG-and-Syntax-Tree" class="headerlink" title="CFG and Syntax Tree"></a>CFG and Syntax Tree</h1><p>Context-free grammer (CFG) is a certain type of grammer. A context-free grammar G is defined by the 4-tuple:</p>
+<p><img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2543ae859dd620f858299855868ae6c2ed066323" alt="G=(V,\Sigma ,R,S)"></p>
+<p>V is a finite set of nonterminal characters, usually to be PoS tags.  Sigma is a finite set of terminals, the actural content of sentence. R is a finite set of rewrite rules.</p>
 <script type="math/tex; mode=display">
-s(c)=cosine(\sum^{n-1}_{j=0}W_{p(e_j)},W_{p(c)})</script><p><strong>Verb-argument model</strong></p>
-<p>Just a little difference from the model above. An event is repersened as the sum of the vectors for its verb and each of its arguments. Other definitions or methods keep unchanged.</p>
+V=\{S,NP,PP,VP,Vst,Det,V,N...\}</script><script type="math/tex; mode=display">
+\Sigma=\{time,flies,like,an,arrow\}</script><script type="math/tex; mode=display">
+R=\{S\rightarrow(NP,VP),S\rightarrow(Vst,NP),VP\rightarrow(V,NP)...\}</script><p>S is the start variable (or start symbol), used to represent the whole sentence (or program). It must be an element of V.</p>
+<p>Based on G, we can build a syntax tree of a given sentence (sequence of words). A example syntax tree looks like:</p>
+<img src="/2018/09/12/Syntax%20Tree%20And%20CKY%20Parser/syntax_tree.jpg">
+<h1 id="CKY-Parser-CKY-Algorithm"><a href="#CKY-Parser-CKY-Algorithm" class="headerlink" title="CKY Parser (CKY Algorithm)"></a>CKY Parser (CKY Algorithm)</h1><h2 id="How-CKY-wroks"><a href="#How-CKY-wroks" class="headerlink" title="How CKY wroks"></a>How CKY wroks</h2><p>How to parse a sentence into a syntax tree (or syntax trees)? Yes, CKY parser (algorithm) is the tool we need. CKY algorithm is dynamic programming algorithm. </p>
+<p>Let <em>s</em> denote the sentence (word sequence), <em>phrase(X, i, j)</em> denote the PoS tag for subsequence from xi to xj with <em>X</em> as root node:</p>
 <script type="math/tex; mode=display">
-s(c)=cosine(\sum^{n-1}_{j=0}[W_{p(e_j)}+W_{a_0(e_j)}+W_{a_1(e_j)}+W_{a_2(e_j)}],W_{p(c)}+W_{a_0(c)}+W_{a_1(c)}+W_{a_2(c)})</script><p>Actually, neither of two models above are adopted a last, because the roles of verb and arguments are obvious different. It is not proper to combine them linearly as the description of an event or a context. M&amp;S apply neural composition model to implement nonlinear combination of the two kinds of vectors. Such a model is called <strong><em>EVENT-COMP</em></strong>, we will talk about it later.</p>
-<p><strong>Embedding model</strong></p>
-<p>In the two models above, the word-vectors we used is from word-vector set provided in the work of <a href="https://arxiv.org/pdf/1301.3781.pdf" target="_blank" rel="noopener">Mikolov et al. (2013a)</a>. These word-vectors are trained based on n-gram, center word and context. </p>
-<p>Inspired by this, and based on the same idea, M&amp;S treat each event’s predicate-GR as a word and each trianing chain as a sentence, and then train a skip-gram model (with hierarchical sampling, using a window size of 5 and vector size of 300), i.e. <strong><em>WORD2VEC-PRED</em></strong>.</p>
-<p>Besides the approach above, M&amp;S also treat predicate and arguments as separate words and place them in the ‘sentence’. Using the similar method, they trained another model <strong><em>WORD2VEC-PRED+ARG</em></strong>, this is also the embedding model adopted finally.</p>
-<p><strong>Neural Compositional Representations</strong></p>
-<p>We want to train a neural network <strong><em>EVENT-COMP</em></strong> to learn a non-linear composition of predicates and arguments into an event representation and a similarity model to determine the similarity between two vectorized events.</p>
-<ul>
-<li><strong>Input Layer</strong> The vectors of the predicate and arguments coresponding to an event. Empty  arguments are filled with zero vectors.</li>
-<li><strong>Argument Composition Layer</strong> It consists of a stack of <a href="http://deeplearning.net/tutorial/dA.html" target="_blank" rel="noopener"><strong><em>denoising autoencoders</em></strong></a>. It produces a low-dimensional representation of the event.</li>
-<li><strong>Event Composition Layer</strong> It consists of fully-connected layers. It produces a single output value <strong><em>coherence score (coh)</em></strong>. The coh represents how confident two input events are from a same chain.</li>
-</ul>
-<img src="/2018/07/29/What%20gonna%20happen%20next/event_comp.jpg" title="event_comp">
-<p>Some training iterations are performed to update only the parameters of event composition layer; Further iterations then update all parameters. (Parameters for 2 events in input layer and argument composition layer are fixed to be same)</p>
-<ul>
-<li><strong>Loss function</strong><script type="math/tex; mode=display">
-\frac{1}{m}\sum^{m}_{i=1}-log[p_i\times coh(e^0_i, e^1_i)+(1-p_i)\times(1-coh(e^0_i, e^1_i))]+\lambda L(\theta)</script>Pi = 1 for positive samples (2 events are from a same chain), and Pi = 0 for negative samples (2 events are from different chain). L is an l2 regularization term. The object is to minimize the loss function.</li>
-</ul>
-<h1 id="What-gonna-happen-next"><a href="#What-gonna-happen-next" class="headerlink" title="What gonna happen next?"></a>What gonna happen next?</h1><p>After training all the models. Given a chain of events, we can compute a <strong><em>coh</em></strong> for a candidate event and each event in the chain. Then sum up these scores. So that we can choose a candidate event with the largest total score as our prediction.</p>
+s=(x_1,x_2,x_3,...,x_n),\ x_i\in\Sigma</script><script type="math/tex; mode=display">
+phrase(X,i,j),\ X\in V,\ 1\leq i,j\leq n</script><p>The recursive formular is:</p>
 <script type="math/tex; mode=display">
-s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Extra" class="headerlink" title="Extra"></a>Extra</h1><p>M&amp;S also provide a effective evaluation method to test the performance of event prediction models called <strong><em>Multiple Choice Version of the Narrative Cloze Task (MCNC)</em></strong>. I am not gonna talk about it here, because it works like what it looks like.</p>
+phrase(X,i,j)=rewrite(X,Y,Z),\ phrase(Y,i,k),\ phrase(Z,k+1,j)</script><script type="math/tex; mode=display">
+X\rightarrow(Y,Z)\in R</script><script type="math/tex; mode=display">
+k\in\{i,i+1,...,j-1\}</script><p>The initial state is:</p>
+<script type="math/tex; mode=display">
+phrase(X,i,i)=rewrite(X,W),\ word(W,i,i)</script><script type="math/tex; mode=display">
+W\in\Sigma</script><p>If we traceback from the top, <em>phrase(X, 1, n)</em>, we can get all  possible syntax of the given sentence under the given CFG. Please refer to the CSCI544-slides for the pseudocode. My notation may be a little different from the slides for I am trying to make it more understandable &gt;_&lt;’’</p>
+<h1 id="Probabilistic-CKY-Parser-Vanilla-PCFGs"><a href="#Probabilistic-CKY-Parser-Vanilla-PCFGs" class="headerlink" title="Probabilistic CKY Parser (Vanilla PCFGs)"></a>Probabilistic CKY Parser (Vanilla PCFGs)</h1><h2 id="How-PCKY-works"><a href="#How-PCKY-works" class="headerlink" title="How PCKY works"></a>How PCKY works</h2><p>For a given sentence and a given CFG, there meybe (actually usually) more than one possible syntax tree. It will cause ambiguity. If we assign a ‘weight’ to every rule, we can calculate the weight of every possible tree and pick one from them withour ambiguity.</p>
+<p>Then it comes a question, how to define a ‘weight’ and how to pick it. If we define the weight of a rule a its possibility to occur, then all possible syntax tree will have a distribution. Based on this definition, we have a modified algorithm, probabilistic CKY parser (or PCFG).</p>
+<p>For given CFG, define T as all possible syntax tree, we are going to get p(t), the distribution over T and choose the syntax tree with the largest probability. </p>
+<p>Let <em>s</em> denote the sentence (word sequence), <em>T(X, i, j)</em> denote all possible syntax trees for subsequence from xi to xj with <em>X</em> as root node. Then define</p>
+<script type="math/tex; mode=display">
+\pi(X,i,j)=\max_{t\in T(X,i,j)}p(t)</script><p>Initial state:</p>
+<script type="math/tex; mode=display">
+\pi(X,i,i)=
+\left\{
+    \begin{aligned}
+    &p(X\rightarrow x_i)&if\ X\rightarrow x_i\in R\\
+    &0&otherwise 
+    \end{aligned}
+\right.</script><script type="math/tex; mode=display">
+p(X\rightarrow x_i)=\frac{count(X\rightarrow x_i)}{count(X)}</script><p>The recursive formular is:</p>
+<script type="math/tex; mode=display">
+\pi(X,i,j)=\max_{X\rightarrow(Y,Z)\in R,\ i\le k<j}p(X\rightarrow(Y,Z))\times\pi(Y,i,k)\times\pi(Z,k+1,j)</script><script type="math/tex; mode=display">
+p(X\rightarrow(Y,Z))=\frac{count(X\rightarrow(Y,Z))}{count(X)}</script><p>At last, the syntax tree we want is:</p>
+<script type="math/tex; mode=display">
+T_{best}=\mathop{\arg\max}_{t\in T(X,1,n),\ x\in V}p(t)</script><h2 id="Applicable-tasks"><a href="#Applicable-tasks" class="headerlink" title="Applicable tasks"></a>Applicable tasks</h2><ul>
+<li>Given a sentence and a CFG, to find the best parsing (syntax tree) of the sentence.</li>
+<li>Given a CFG, to get the probability of a sentence to be generated.</li>
+</ul>
+<p>In task2, we need to add up probabilities of all possible parsing result of the sentence.</p>
+<h2 id="Generalizing"><a href="#Generalizing" class="headerlink" title="Generalizing"></a>Generalizing</h2><p>If we apply a -log() on both sides of the recursive formular, we get <strong>weighted CKY parser</strong>. And what we want becomes the syntax tree with the lowest weight (-log cost). PCKY is actually a special case of WCKY.</p>
+<p>WCKY can be generalized into <strong>semiring-weighted CKY</strong> (the most general algorithm). Just use semiring operation (should obey <strong>semiring axioms</strong>) to replace original specific operation.  Deatails could be found in CSCI544-slides. </p>
+<h2 id="Drawback-and-improvement"><a href="#Drawback-and-improvement" class="headerlink" title="Drawback and improvement"></a>Drawback and improvement</h2><p>The information of word relations does not contribute much to the building of the whole syntax tree of a sentence. <strong><em>(I really hope u guys could give some better explanation for this)</em></strong></p>
+<p>Instead of using PoS tags only (elements in V), we use tuple <strong>(head word, PoS tag)</strong> for each nonterminal character.</p>
+<p>original:</p>
+<script type="math/tex; mode=display">
+S\rightarrow NP,\ VP</script><p>After <strong>lexicalized</strong>:</p>
+<script type="math/tex; mode=display">
+S(loves,VB)\rightarrow NP(John,NNP),\ VP(loves,VB)</script><p><strong>References:</strong></p>
+<p><a href="https://github.com/isi-nlp/csci_544_fa_18_slides/blob/master/pcfg_0914.pptx" target="_blank" rel="noopener">https://github.com/isi-nlp/csci_544_fa_18_slides/blob/master/pcfg_0914.pptx</a></p>
+<p><a href="https://blog.csdn.net/qq_37171771/article/details/79342819" target="_blank" rel="noopener">https://blog.csdn.net/qq_37171771/article/details/79342819)</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar</a></p>
+<p><a href="http://ccl.pku.edu.cn/doubtfire/Course/Computational%20Linguistics/contents/CYK_parsing.pdf" target="_blank" rel="noopener">http://ccl.pku.edu.cn/doubtfire/Course/Computational%20Linguistics/contents/CYK_parsing.pdf</a></p>
 
       
     </div>
@@ -382,7 +407,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
           
             <a href="/tags/NLP/" rel="tag"># NLP</a>
           
-            <a href="/tags/Event-prediction/" rel="tag"># Event prediction</a>
+            <a href="/tags/CS544/" rel="tag"># CS544</a>
           
         </div>
       
@@ -395,8 +420,8 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/07/25/NarrativeChains/" rel="next" title="Narrative Event Chains">
-                <i class="fa fa-chevron-left"></i> Narrative Event Chains
+              <a href="/2018/07/29/What gonna happen next/" rel="next" title="What gonna happen next?">
+                <i class="fa fa-chevron-left"></i> What gonna happen next?
               </a>
             
           </div>
@@ -404,10 +429,6 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/09/12/Syntax Tree And CKY Parser/" rel="prev" title="Syntax Tree And CKY Parser [CS544 USC]">
-                Syntax Tree And CKY Parser [CS544 USC] <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -545,7 +566,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Event-Prediction-Based-on-“Event-Embedding”"><span class="nav-number">1.</span> <span class="nav-text">Event Prediction Based on “Event Embedding”</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Recall"><span class="nav-number">2.</span> <span class="nav-text">Recall</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Insight"><span class="nav-number">3.</span> <span class="nav-text">Insight</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Embedding"><span class="nav-number">4.</span> <span class="nav-text">Embedding</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#What-gonna-happen-next"><span class="nav-number">5.</span> <span class="nav-text">What gonna happen next?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Extra"><span class="nav-number">6.</span> <span class="nav-text">Extra</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CFG-and-Syntax-Tree"><span class="nav-number">1.</span> <span class="nav-text">CFG and Syntax Tree</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CKY-Parser-CKY-Algorithm"><span class="nav-number">2.</span> <span class="nav-text">CKY Parser (CKY Algorithm)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#How-CKY-wroks"><span class="nav-number">2.1.</span> <span class="nav-text">How CKY wroks</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Probabilistic-CKY-Parser-Vanilla-PCFGs"><span class="nav-number">3.</span> <span class="nav-text">Probabilistic CKY Parser (Vanilla PCFGs)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#How-PCKY-works"><span class="nav-number">3.1.</span> <span class="nav-text">How PCKY works</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Applicable-tasks"><span class="nav-number">3.2.</span> <span class="nav-text">Applicable tasks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Generalizing"><span class="nav-number">3.3.</span> <span class="nav-text">Generalizing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Drawback-and-improvement"><span class="nav-number">3.4.</span> <span class="nav-text">Drawback and improvement</span></a></li></ol></li></ol></div>
             
 
           </div>

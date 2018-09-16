@@ -258,6 +258,184 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/myavatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/12/Syntax Tree And CKY Parser/" itemprop="url">Syntax Tree And CKY Parser [CS544 USC]</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-12T23:24:56-07:00">
+                2018-09-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the grammer structure of a sentence can help us understanding  it in some degree. Therefore, parsing a sentence into a syntax tree will be a very valuable work.</p>
+<h1 id="CFG-and-Syntax-Tree"><a href="#CFG-and-Syntax-Tree" class="headerlink" title="CFG and Syntax Tree"></a>CFG and Syntax Tree</h1><p>Context-free grammer (CFG) is a certain type of grammer. A context-free grammar G is defined by the 4-tuple:</p>
+<p><img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2543ae859dd620f858299855868ae6c2ed066323" alt="G=(V,\Sigma ,R,S)"></p>
+<p>V is a finite set of nonterminal characters, usually to be PoS tags.  Sigma is a finite set of terminals, the actural content of sentence. R is a finite set of rewrite rules.</p>
+<script type="math/tex; mode=display">
+V=\{S,NP,PP,VP,Vst,Det,V,N...\}</script><script type="math/tex; mode=display">
+\Sigma=\{time,flies,like,an,arrow\}</script><script type="math/tex; mode=display">
+R=\{S\rightarrow(NP,VP),S\rightarrow(Vst,NP),VP\rightarrow(V,NP)...\}</script><p>S is the start variable (or start symbol), used to represent the whole sentence (or program). It must be an element of V.</p>
+<p>Based on G, we can build a syntax tree of a given sentence (sequence of words). A example syntax tree looks like:</p>
+<img src="/2018/09/12/Syntax%20Tree%20And%20CKY%20Parser/syntax_tree.jpg">
+<h1 id="CKY-Parser-CKY-Algorithm"><a href="#CKY-Parser-CKY-Algorithm" class="headerlink" title="CKY Parser (CKY Algorithm)"></a>CKY Parser (CKY Algorithm)</h1><h2 id="How-CKY-wroks"><a href="#How-CKY-wroks" class="headerlink" title="How CKY wroks"></a>How CKY wroks</h2><p>How to parse a sentence into a syntax tree (or syntax trees)? Yes, CKY parser (algorithm) is the tool we need. CKY algorithm is dynamic programming algorithm. </p>
+<p>Let <em>s</em> denote the sentence (word sequence), <em>phrase(X, i, j)</em> denote the PoS tag for subsequence from xi to xj with <em>X</em> as root node:</p>
+<script type="math/tex; mode=display">
+s=(x_1,x_2,x_3,...,x_n),\ x_i\in\Sigma</script><script type="math/tex; mode=display">
+phrase(X,i,j),\ X\in V,\ 1\leq i,j\leq n</script><p>The recursive formular is:</p>
+<script type="math/tex; mode=display">
+phrase(X,i,j)=rewrite(X,Y,Z),\ phrase(Y,i,k),\ phrase(Z,k+1,j)</script><script type="math/tex; mode=display">
+X\rightarrow(Y,Z)\in R</script><script type="math/tex; mode=display">
+k\in\{i,i+1,...,j-1\}</script><p>The initial state is:</p>
+<script type="math/tex; mode=display">
+phrase(X,i,i)=rewrite(X,W),\ word(W,i,i)</script><script type="math/tex; mode=display">
+W\in\Sigma</script><p>If we traceback from the top, <em>phrase(X, 1, n)</em>, we can get all  possible syntax of the given sentence under the given CFG. Please refer to the CSCI544-slides for the pseudocode. My notation may be a little different from the slides for I am trying to make it more understandable &gt;_&lt;’’</p>
+<h1 id="Probabilistic-CKY-Parser-Vanilla-PCFGs"><a href="#Probabilistic-CKY-Parser-Vanilla-PCFGs" class="headerlink" title="Probabilistic CKY Parser (Vanilla PCFGs)"></a>Probabilistic CKY Parser (Vanilla PCFGs)</h1><h2 id="How-PCKY-works"><a href="#How-PCKY-works" class="headerlink" title="How PCKY works"></a>How PCKY works</h2><p>For a given sentence and a given CFG, there meybe (actually usually) more than one possible syntax tree. It will cause ambiguity. If we assign a ‘weight’ to every rule, we can calculate the weight of every possible tree and pick one from them withour ambiguity.</p>
+<p>Then it comes a question, how to define a ‘weight’ and how to pick it. If we define the weight of a rule a its possibility to occur, then all possible syntax tree will have a distribution. Based on this definition, we have a modified algorithm, probabilistic CKY parser (or PCFG).</p>
+<p>For given CFG, define T as all possible syntax tree, we are going to get p(t), the distribution over T and choose the syntax tree with the largest probability. </p>
+<p>Let <em>s</em> denote the sentence (word sequence), <em>T(X, i, j)</em> denote all possible syntax trees for subsequence from xi to xj with <em>X</em> as root node. Then define</p>
+<script type="math/tex; mode=display">
+\pi(X,i,j)=\max_{t\in T(X,i,j)}p(t)</script><p>Initial state:</p>
+<script type="math/tex; mode=display">
+\pi(X,i,i)=
+\left\{
+    \begin{aligned}
+    &p(X\rightarrow x_i)&if\ X\rightarrow x_i\in R\\
+    &0&otherwise 
+    \end{aligned}
+\right.</script><script type="math/tex; mode=display">
+p(X\rightarrow x_i)=\frac{count(X\rightarrow x_i)}{count(X)}</script><p>The recursive formular is:</p>
+<script type="math/tex; mode=display">
+\pi(X,i,j)=\max_{X\rightarrow(Y,Z)\in R,\ i\le k<j}p(X\rightarrow(Y,Z))\times\pi(Y,i,k)\times\pi(Z,k+1,j)</script><script type="math/tex; mode=display">
+p(X\rightarrow(Y,Z))=\frac{count(X\rightarrow(Y,Z))}{count(X)}</script><p>At last, the syntax tree we want is:</p>
+<script type="math/tex; mode=display">
+T_{best}=\mathop{\arg\max}_{t\in T(X,1,n),\ x\in V}p(t)</script><h2 id="Applicable-tasks"><a href="#Applicable-tasks" class="headerlink" title="Applicable tasks"></a>Applicable tasks</h2><ul>
+<li>Given a sentence and a CFG, to find the best parsing (syntax tree) of the sentence.</li>
+<li>Given a CFG, to get the probability of a sentence to be generated.</li>
+</ul>
+<p>In task2, we need to add up probabilities of all possible parsing result of the sentence.</p>
+<h2 id="Generalizing"><a href="#Generalizing" class="headerlink" title="Generalizing"></a>Generalizing</h2><p>If we apply a -log() on both sides of the recursive formular, we get <strong>weighted CKY parser</strong>. And what we want becomes the syntax tree with the lowest weight (-log cost). PCKY is actually a special case of WCKY.</p>
+<p>WCKY can be generalized into <strong>semiring-weighted CKY</strong> (the most general algorithm). Just use semiring operation (should obey <strong>semiring axioms</strong>) to replace original specific operation.  Deatails could be found in CSCI544-slides. </p>
+<h2 id="Drawback-and-improvement"><a href="#Drawback-and-improvement" class="headerlink" title="Drawback and improvement"></a>Drawback and improvement</h2><p>The information of word relations does not contribute much to the building of the whole syntax tree of a sentence. <strong><em>(I really hope u guys could give some better explanation for this)</em></strong></p>
+<p>Instead of using PoS tags only (elements in V), we use tuple <strong>(head word, PoS tag)</strong> for each nonterminal character.</p>
+<p>original:</p>
+<script type="math/tex; mode=display">
+S\rightarrow NP,\ VP</script><p>After <strong>lexicalized</strong>:</p>
+<script type="math/tex; mode=display">
+S(loves,VB)\rightarrow NP(John,NNP),\ VP(loves,VB)</script><p><strong>References:</strong></p>
+<p><a href="https://github.com/isi-nlp/csci_544_fa_18_slides/blob/master/pcfg_0914.pptx" target="_blank" rel="noopener">https://github.com/isi-nlp/csci_544_fa_18_slides/blob/master/pcfg_0914.pptx</a></p>
+<p><a href="https://blog.csdn.net/qq_37171771/article/details/79342819" target="_blank" rel="noopener">https://blog.csdn.net/qq_37171771/article/details/79342819)</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar</a></p>
+<p><a href="http://ccl.pku.edu.cn/doubtfire/Course/Computational%20Linguistics/contents/CYK_parsing.pdf" target="_blank" rel="noopener">http://ccl.pku.edu.cn/doubtfire/Course/Computational%20Linguistics/contents/CYK_parsing.pdf</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/29/What gonna happen next/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -289,7 +467,7 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-29T17:16:45+08:00">
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-29T02:16:45-07:00">
                 2018-07-29
               </time>
             
@@ -412,7 +590,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/26/NarrativeChains/">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/25/NarrativeChains/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Wang Yipeng">
@@ -431,7 +609,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/07/26/NarrativeChains/" itemprop="url">Narrative Event Chains</a></h1>
+                <a class="post-title-link" href="/2018/07/25/NarrativeChains/" itemprop="url">Narrative Event Chains</a></h1>
         
 
         <div class="post-meta">
@@ -443,8 +621,8 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-26T07:42:29+08:00">
-                2018-07-26
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-25T16:42:29-07:00">
+                2018-07-25
               </time>
             
 
@@ -565,14 +743,14 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
 <p>To to this, we need to introduce <strong><em>coherence score</em></strong>.</p>
 <p><strong><em>Coherence score</em></strong> is the sum of all relations (edge in the graph) that our model agrees with. </p>
 <p>Every edge is weighted by its <strong><em>confidence</em></strong></p>
-<img src="/2018/07/26/NarrativeChains/example1.jpg">
+<img src="/2018/07/25/NarrativeChains/example1.jpg">
 <p><strong>[*Notice]</strong></p>
 <p>In real practice, the mathematical definition of <em><strong>confidence</strong></em> will be more complex, but here I just simplify it to make it more understandable. Please check <a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">the original paper</a> for formal definition.  </p>
 <h2 id="Stage-3-Discrete-narrative-event-chains"><a href="#Stage-3-Discrete-narrative-event-chains" class="headerlink" title="Stage 3 Discrete narrative event chains"></a>Stage 3 Discrete narrative event chains</h2><p>Up to now, we have got <strong><em>narrative relations</em></strong> across all possible events and their <strong><em>temporal order</em></strong> (i.e. many partially ordered narrative event chains).</p>
 <p>But they are still discrete list and cannot reproduce explicit self-contained scripts.</p>
 <p>However, it is totally worthwhile to construct discrete narrative chains, because it can be used to check <strong><em>whether the combination of events learning and ordering has produced script-like structures</em></strong> </p>
 <p>And, to get a whole combination of events, we only need to apply a <strong><em>cluster algorithm</em></strong> over <strong><em>all events</em></strong> based on <strong><em>PMI score</em></strong> we got before, and use approach stated in stage 2 to extract “before” relation among them.</p>
-<img src="/2018/07/26/NarrativeChains/example2.jpg">
+<img src="/2018/07/25/NarrativeChains/example2.jpg">
 <h1 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h1><p>This the very basic and important work in the area of NLP. It provides a new idea for “language generation”, “question answering”, “frame induction” and many other areas.</p>
 <p><a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">*original paper: “Unsupervised Learning of Narrative Event Chains”</a></p>
 
@@ -654,7 +832,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-06T20:07:34+08:00">
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-06T05:07:34-07:00">
                 2018-07-06
               </time>
             
@@ -811,7 +989,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/06/29/SeqGAN/">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/06/28/SeqGAN/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Wang Yipeng">
@@ -830,7 +1008,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/06/29/SeqGAN/" itemprop="url">用GAN生成对抗网络和RL强化学习手段生成自然语言序列</a></h1>
+                <a class="post-title-link" href="/2018/06/28/SeqGAN/" itemprop="url">用GAN生成对抗网络和RL强化学习手段生成自然语言序列</a></h1>
         
 
         <div class="post-meta">
@@ -842,8 +1020,8 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-29T12:32:43+08:00">
-                2018-06-29
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-28T21:32:43-07:00">
+                2018-06-28
               </time>
             
 
@@ -895,11 +1073,11 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
 <li>Policy Gradient取代反向传播：利用reward作为反馈，增加具有高reward的动作（G生成一个单词）出现的概率，减小reward小的动作出现的概率，以此进行梯度训练，更新参数，不再需要依赖于D的反向传播来更新参数，</li>
 <li>Roll-out Model生成完整序列：将当前生成的不完整的序列补全为完整的序列，从而可以直接输入D得到一个score/loss（reward）</li>
 </ul>
-<h1 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h1><h2 id="整体框架"><a href="#整体框架" class="headerlink" title="整体框架"></a>整体框架</h2><img src="/2018/06/29/SeqGAN/model_structure.jpg">
+<h1 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h1><h2 id="整体框架"><a href="#整体框架" class="headerlink" title="整体框架"></a>整体框架</h2><img src="/2018/06/28/SeqGAN/model_structure.jpg">
 <h2 id="Generator-RNN-with-LSTM"><a href="#Generator-RNN-with-LSTM" class="headerlink" title="Generator - RNN with LSTM"></a>Generator - RNN with LSTM</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">generator = Generator(vocab_size, BATCH_SIZE, EMB_DIM, HIDDEN_DIM, SEQ_LENGTH, START_TOKEN)</span><br></pre></td></tr></table></figure>
-<img src="/2018/06/29/SeqGAN/generator.jpg">
+<img src="/2018/06/28/SeqGAN/generator.jpg">
 <h2 id="Discriminator-CNN-with-Highway"><a href="#Discriminator-CNN-with-Highway" class="headerlink" title="Discriminator - CNN with Highway"></a>Discriminator - CNN with Highway</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">discriminator = Discriminator(sequence_length=<span class="number">20</span>, num_classes=<span class="number">2</span>, vocab_size=vocab_size, embedding_size=dis_embedding_dim, filter_sizes=dis_filter_sizes, num_filters=dis_num_filters, l2_reg_lambda=dis_l2_reg_lambda)</span><br></pre></td></tr></table></figure>
-<img src="/2018/06/29/SeqGAN/discriminator.jpg">
+<img src="/2018/06/28/SeqGAN/discriminator.jpg">
 <h2 id="Roll-out-Model"><a href="#Roll-out-Model" class="headerlink" title="Roll-out Model"></a>Roll-out Model</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rollout = ROLLOUT(generator, <span class="number">0.8</span>)</span><br></pre></td></tr></table></figure>
 <p>共享Generator的网络结构与参数</p>
 <h2 id="Oracle-Model-Target-LSTM"><a href="#Oracle-Model-Target-LSTM" class="headerlink" title="Oracle Model - Target LSTM"></a>Oracle Model - Target LSTM</h2><p>该模型被用作参考模型（ human observer for real-world problems），其作用是：</p>
@@ -938,164 +1116,6 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
 <li><strong>自有的真实数据中句子的长度不再固定，我们需要把它切割成相同长度的序列（是否有影响）</strong> </li>
 <li><strong>生成器生成的的句子长度都是相同的，是否能够满足我们的需求（句子生成的终点判定）</strong></li>
 </ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2017/12/22/professional  text classification based on CNN/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wang Yipeng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/myavatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yipeng's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/22/professional  text classification based on CNN/" itemprop="url">基于卷积神经网络（CNN）的专业文本语料分类</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-22T09:14:24+08:00">
-                2017-12-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>T 平台上有大量的双语句对，大部分句对没有被标注类别，其余的句对虽然被标注了类别，但是不准确，真正被准确标注的句对只占相当少的一部分。T 平台上的语料检索、内容分发与路由都依赖于准确的语料类别标注，对于这样的大量的（千万量级）双语句对语料，我考虑利用 CNN 训练出分类器模型，对所有现有的语料数据进行分类，另外可以把分类分类器模型包装成 web 服务，对新增预料数据进行实时的分类。</p>
-<h1 id="训练样本收集与预处理"><a href="#训练样本收集与预处理" class="headerlink" title="训练样本收集与预处理"></a>训练样本收集与预处理</h1><h2 id="样本来源"><a href="#样本来源" class="headerlink" title="样本来源"></a>样本来源</h2><p>由于平台上的语料数据专门服务于翻译行业，语料中有相当多的专业词汇，与常见的语料数据库（<a href="http://www.sogou.com/labs/resource/list_news.php" target="_blank" rel="noopener">搜狗新闻数据库</a>、<a href="http://www.nlpir.org/?action-viewnews-itemid-103" target="_blank" rel="noopener">复旦新闻数据库</a>等）差异巨大，因此训练所用到的数据均来自于平台上现有数据。</p>
-<h2 id="中英文分离"><a href="#中英文分离" class="headerlink" title="中英文分离"></a>中英文分离</h2><p>目的：将双语文本中的中英文分离，分别训练出一个分类器，这样做可以充分利用双语句对的特性，两个分类器可以相互加强，提高分类器的效果。</p>
-<p>方案：构建若干个字符集合（英文字母/数字集合、英文标点集合、中文标点集合、空格、英文全角字母/数字集合），利用<code>filter()</code>函数很容易将这些集合中的字符从原始文本中去除/保留，从而实现中英文的分离。去除标点也可以利用 jieba 分词器自带的词性标注功能，标点和其他罕见字符都会标注成 X，因此很容易去除，但因为词性标注功能和用户词典加载功能不兼容，最后没有采用。</p>
-<p>用到的库/方法：标准库 string</p>
-<pre><code>import string
-string.printable
-filter(function, iterable)
-</code></pre><h2 id="分词"><a href="#分词" class="headerlink" title="分词"></a>分词</h2><p>目的：无论是文本向量化，还是停止词过滤等基于词语的文本操作，都需要先对文本进行分词。</p>
-<p>方案：英文分词直接用空格分词即可，中文分词利用 jieba 分词库。</p>
-<p>用到的库/方法：<a href="http://www.oss.io/p/fxsjy/jieba" target="_blank" rel="noopener">中文分词库 jieba</a></p>
-<pre><code>import jieba
-jieba.posseg.cut()
-</code></pre><h2 id="停止词过滤"><a href="#停止词过滤" class="headerlink" title="停止词过滤"></a>停止词过滤</h2><p>目的：<a href="https://en.wikipedia.org/wiki/Stop_words" target="_blank" rel="noopener">停止词</a>指的是那些使用频率过高、对语句信息贡献很小的词，这些词对我们的分类任务几乎没有帮助，而且稀释别的具有区分性的词，因此在训练之前要将这些词过滤掉。将停止词数据库放到集合类型<code>set()</code>中去，过滤方法同上不再赘述。</p>
-<h2 id="训练样本的提纯"><a href="#训练样本的提纯" class="headerlink" title="训练样本的提纯"></a>训练样本的提纯</h2><p>目的：神经网络的训练允许训练样本中存在噪声，但平台上现有的语料质量依然无法满足要求，有大量的被错误标注的语料，因此我们需要对现有语料进行一次“提纯”。</p>
-<p>方案：<a href="http://pinyin.sogou.com/dict/" target="_blank" rel="noopener">搜狗细胞词库</a>/T 平台上有质量非常好的术语数据，利用这些术语数据可以从原始样本中选出质量相对较高的样本。对于一段语料（假设被标注为：医药），利用医药术语数据，我们可以统计出这段语料中出现的医药术语的频数，以及医药术语占这段语料总词数的百分比，综合这两个指标，我们可以判断出这段语料确实是属于“医药”的程度，通过实验测试出合理的阈值，从而选择出高质量的语料数据。</p>
-<p>用到的库/方法：<a href="http://radimrehurek.com/gensim/tutorial.html" target="_blank" rel="noopener">自然语言处理库 Gensim</a></p>
-<pre><code>from gensim import corpora
-corpora.Dictionary()
-corpora.Dictionary.token2id
-corpora.Dictionary.filter_tokens()
-corpora.Dictionary.compactify()
-corpora.Dictionary.save()
-corpora.Dictionary.doc2bow()
-corpora.Dictionary.load()
-</code></pre><h2 id="向量化"><a href="#向量化" class="headerlink" title="向量化"></a>向量化</h2><p>目的：必须把长度各异的文本处理成长度相同的向量才能够输入 CNN 进行训练。</p>
-<p>方案：由于预料数据中的句子长度较短，单句包含信息量少，不利于我们提取特征、区分类别，因此需要将短句组合成较长的（40 词到 50 词）并且长度相近的句段；然后，利用基于词频的词袋（Bag of Words）模型，把句段转化成 one-hot 向量（向量的每一位对应一个词，这一位的数字就是这个词在句段中出现的频数，可以看出向量长度与词典大小相同）；最后，在输入神经网络之前，做一次长度归一化（通过补 0 或者截短，生成长度恰好为 50 的向量）。</p>
-<h1 id="CNN-训练"><a href="#CNN-训练" class="headerlink" title="CNN 训练"></a>CNN 训练</h1><h2 id="CNN-结构"><a href="#CNN-结构" class="headerlink" title="CNN 结构"></a>CNN 结构</h2><ul>
-<li>Embedding Layer：输入 CNN 的是尺寸为<code>50 * Size of Dictionary</code>的二维向量， 因为字典尺寸很大，所以这些二维向量的尺寸也很大，并且十分系数（含有大量的0），CNN 不善于处理如此高维而且稀疏的向量，因此需要嵌入层把这些向量降维到<code>50 * 200</code>或者 其他合适的尺寸（根据实际计算能力选择），再输入第二层训练更加高级的特征。这一层的作用就相当于一次预训练，其实已经提取出了初级的文本特征。</li>
-<li>Dropout Layer：利用 Dropout 方法，减少过拟合现象。</li>
-<li>Convolutional Layer：卷积层，提取文本向量局部特征。</li>
-<li>Pooling Layer：进一步缩减向量尺寸。</li>
-<li>Fully connected Layer (reLu)：加速训练。</li>
-<li>Fully connected Layer (softmax)：把向量收缩到 15 维（对应 15 个类别），生成概率分布。</li>
-</ul>
-<h2 id="CNN-训练结果"><a href="#CNN-训练结果" class="headerlink" title="CNN 训练结果"></a>CNN 训练结果</h2><p>本文实验语料数据共有15个类别，每个类别分别有 50000 左右句对参与训练，使用 tensorflow 机器学习框架、Keras 提供的高级接口，在 GTX1050ti CUDA 加速下，完成单个 CNN 模型的训练需要 30 min，在测试集的上的分类准确率达到 90%。</p>
-<h1 id="输出预测结果"><a href="#输出预测结果" class="headerlink" title="输出预测结果"></a>输出预测结果</h1><p>模型训练完成之后，我们进一步在新的样本上进行测试，发现很多样本的预测结果不符合常识判断，而这些样本实际上不属于任何一个已知的类别，我们要将这些样本剔除，于是考虑新增一个 UNCLEAR 类别，专门用于接纳那些不属于任何一个已知类别的样本，这些样本由于不属于任何一个类别，我们推测这样的样本输入 CNN 网络后，输出的概率分布的方差应该是相对较小的，通过实验，发现情况确实如此，我们成功地找到了一个方差阈值，将一些无分类样本分到了 UNLCELEAR 类别，提高了分类结果地可靠性。</p>
-<p>由于 CNN 要求输入的向量尺寸相同，我们需要对一些长句子进行截短操作，这回导致语句信息的丢失，如果丢失了那些能够决定句子类别的关键词语，这将导致预测分类的结果变差，因此，我们对于对同一个样本，我们将词序打乱，用 CNN 进行多次判断，这样因为截短操作而丢失关键信息的可能性就大大减小了，最后我们可以根据多次判断的结果，综合得出预测的结果（如果一个句子多次被判断为同一类别，我们就确信它属于这个列别，其余的可以被预测为 UNCLEAR）。</p>
-<p>最终，两步优化大大改善了预测结果的可靠性。</p>
 
           
         
@@ -1184,7 +1204,7 @@ corpora.Dictionary.load()
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">posts</span>
               </a>
             </div>
@@ -1197,7 +1217,7 @@ corpora.Dictionary.load()
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">tags</span>
               </a>
             </div>
