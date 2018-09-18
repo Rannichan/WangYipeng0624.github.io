@@ -436,6 +436,150 @@ S(loves,VB)\rightarrow NP(John,NNP),\ VP(loves,VB)</script><p><strong>References
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/09/08/POS tag & HMM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/myavatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/08/POS tag & HMM/" itemprop="url">POS tag & HMM [CS544 USC]</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-08T09:33:13-07:00">
+                2018-09-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="POS-Tag"><a href="#POS-Tag" class="headerlink" title="POS Tag"></a>POS Tag</h1><p>POS is short for “part of speech” which also means <strong>syntactic categories</strong>. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks.</p>
+<p>The tag of a word depends on the word itself and the tags of surrounding words. Such a situation can be descripbed by HMM probabilistically.</p>
+<ul>
+<li>Open class words: It is also called content words. It could be nouns, verbs, adjectives or adverbs usually. There is no limit to what they are and can be added all the times.</li>
+<li>Closed class words: It is also called function words. It could be pronouns, determiners, prepositions or connectives usually. There are a limit number of these words. </li>
+</ul>
+<h1 id="Different-Sets-of-POS-Tags"><a href="#Different-Sets-of-POS-Tags" class="headerlink" title="Different Sets of POS Tags"></a>Different Sets of POS Tags</h1><p>There are many different sets of POS tags based on different linguistic and practical considerations. We can choose to use one of them according to our specific task. </p>
+<p>Commonly used tag sets for English usually have 40 to 100 tag types. The <strong><a href="https://www.clips.uantwerpen.be/pages/mbsp-tags" target="_blank" rel="noopener">Penn Treebank</a></strong> has 45 tags.</p>
+<h1 id="Modeling-POS-Tagging-with-HMM-1"><a href="#Modeling-POS-Tagging-with-HMM-1" class="headerlink" title="Modeling POS Tagging with HMM[1]"></a>Modeling POS Tagging with HMM[1]</h1><p>What we are interested in is P(W|T) and P(T) where W and T are sequences of length N.</p>
+<ul>
+<li>Assumption 1: Each tag is conditioned only on the previous tag. This is so-called <strong>Markov Property</strong></li>
+<li>Assumption 2: Each word is conditioned only on its tag.</li>
+</ul>
+<p>Based on these two assumptions, we can use HMM to describe the POS tagging process. </p>
+<script type="math/tex; mode=display">
+argmax_{T}P(T|W)=argmax_{T}P(W|T)P(T)</script><p>To solve this optimization problem, we can use <strong>Greedy Algorithm</strong>, i.e. at each time step, compute the possibility under each possible tag given the previous tag and choose the best one. It is easy to know the time complexity of greedy algorithm is <strong>O(|T|*N)</strong>.</p>
+<p>Greedy algorithm’s result is suboptimal. To get the optimal tag sequence we need <strong>Viterbi Algorithm[2]</strong>. If we use T to denote tag sequence, W to denote word sequence, and v[T, W] to denote be the probability of the best T-W pair, the algorithm can be described with formulas below: </p>
+<script type="math/tex; mode=display">
+T_{1:i}=[t_1,t_2,...,t_i]</script><script type="math/tex; mode=display">
+W_{1:i}=[w_1,w_2,...,w_i]</script><script type="math/tex; mode=display">
+v[T_{1:i},W_{1:i}]=max_{t_{i}}v[T_{1:i-1},W_{1:i-1}]\times P(t_{i}|t_{i-1})\times P(W_{i}|t_{i})</script><p><strong>[1] Hidden Markov Model (HMM)</strong> is a statistical <a href="https://en.wikipedia.org/wiki/Markov_model" target="_blank" rel="noopener">Markov model</a> in which the system being modeled is assumed to be a <a href="https://en.wikipedia.org/wiki/Markov_process" target="_blank" rel="noopener">Markov process</a> with unobserved (i.e. <em>hidden</em>) states.</p>
+<p>In simpler Markov models (like a <a href="https://en.wikipedia.org/wiki/Markov_chain" target="_blank" rel="noopener">Markov chain</a>), the state is directly visible to the observer, and therefore the state transition probabilities are the only parameters, while in the hidden Markov model, <strong><em>the state (i.e. POS tag in our discussion)</em></strong> is not directly visible, but the <strong><em>output (i.e. Word)</em></strong>, dependent on the state, is visible. Each state has a probability distribution over the possible output tokens. Therefore, the sequence of tokens generated by an HMM gives some information about the sequence of states.</p>
+<p><strong>[2] Viterbi algorithm</strong> is a <a href="https://en.wikipedia.org/wiki/Dynamic_programming" target="_blank" rel="noopener">dynamic programming</a> algorithm for finding the most likely sequence of hidden states—called the <strong>Viterbi path</strong>—that results in a sequence of observed events, especially in the context of Markov information sources and hidden Markov models.</p>
+<p>Intuition: the best path of length i ending in state must include the best path of length i-1 to the previous state.</p>
+<p>Baisc steps: Best path of length i-1 to each state —&gt; Extend each path to state t and find the best one —&gt; Best path of length i in state t. </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/29/What gonna happen next/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -976,181 +1120,6 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/06/28/SeqGAN/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wang Yipeng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/myavatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yipeng's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/06/28/SeqGAN/" itemprop="url">用GAN生成对抗网络和RL强化学习手段生成自然语言序列</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-28T21:32:43-07:00">
-                2018-06-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><h2 id="GAN的思想"><a href="#GAN的思想" class="headerlink" title="GAN的思想"></a>GAN的思想</h2><ul>
-<li>组件：生成器G（Generator），鉴别器D（Discriminator）</li>
-<li>对抗：D用来鉴别真实数据和生成数据，G不断进化自身来生成可以迷惑D的数据</li>
-<li>目标：G利用D的反向传播不断更新自身参数，最后可以生成以假乱真的数据</li>
-</ul>
-<h2 id="GAN的不足之处"><a href="#GAN的不足之处" class="headerlink" title="GAN的不足之处"></a>GAN的不足之处</h2><ul>
-<li>G通常使用的是LSTM，那么G传递给D的是一堆离散值序列（即每一个LSTM单元的输出经过softmax之后再取argmax或者基于概率采样得到一个具体的单词），这导致D的损失函数不是连续可微的，这使得梯度下架很难处理。</li>
-<li>D只能评估出整个生成序列的score/loss，不能够细化到去评估当前生成token的好坏和对后面生成的影响</li>
-</ul>
-<h2 id="RL的功能"><a href="#RL的功能" class="headerlink" title="RL的功能"></a>RL的功能</h2><ul>
-<li>Policy Gradient取代反向传播：利用reward作为反馈，增加具有高reward的动作（G生成一个单词）出现的概率，减小reward小的动作出现的概率，以此进行梯度训练，更新参数，不再需要依赖于D的反向传播来更新参数，</li>
-<li>Roll-out Model生成完整序列：将当前生成的不完整的序列补全为完整的序列，从而可以直接输入D得到一个score/loss（reward）</li>
-</ul>
-<h1 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h1><h2 id="整体框架"><a href="#整体框架" class="headerlink" title="整体框架"></a>整体框架</h2><img src="/2018/06/28/SeqGAN/model_structure.jpg">
-<h2 id="Generator-RNN-with-LSTM"><a href="#Generator-RNN-with-LSTM" class="headerlink" title="Generator - RNN with LSTM"></a>Generator - RNN with LSTM</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">generator = Generator(vocab_size, BATCH_SIZE, EMB_DIM, HIDDEN_DIM, SEQ_LENGTH, START_TOKEN)</span><br></pre></td></tr></table></figure>
-<img src="/2018/06/28/SeqGAN/generator.jpg">
-<h2 id="Discriminator-CNN-with-Highway"><a href="#Discriminator-CNN-with-Highway" class="headerlink" title="Discriminator - CNN with Highway"></a>Discriminator - CNN with Highway</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">discriminator = Discriminator(sequence_length=<span class="number">20</span>, num_classes=<span class="number">2</span>, vocab_size=vocab_size, embedding_size=dis_embedding_dim, filter_sizes=dis_filter_sizes, num_filters=dis_num_filters, l2_reg_lambda=dis_l2_reg_lambda)</span><br></pre></td></tr></table></figure>
-<img src="/2018/06/28/SeqGAN/discriminator.jpg">
-<h2 id="Roll-out-Model"><a href="#Roll-out-Model" class="headerlink" title="Roll-out Model"></a>Roll-out Model</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rollout = ROLLOUT(generator, <span class="number">0.8</span>)</span><br></pre></td></tr></table></figure>
-<p>共享Generator的网络结构与参数</p>
-<h2 id="Oracle-Model-Target-LSTM"><a href="#Oracle-Model-Target-LSTM" class="headerlink" title="Oracle Model - Target LSTM"></a>Oracle Model - Target LSTM</h2><p>该模型被用作参考模型（ human observer for real-world problems），其作用是：</p>
-<ol>
-<li>被用来生成训练样本（正样本，real-world data）</li>
-<li>被用来测试最后训练处的G（G越相似于Oracle Model，则G越优）</li>
-</ol>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">START_TOKEN = <span class="number">0</span> <span class="comment">#initial token</span></span><br><span class="line">target_params = cPickle.load(open(<span class="string">'save/target_params.pkl'</span>)) <span class="comment"># target lstm 网络参数</span></span><br><span class="line">target_lstm = TARGET_LSTM(vocab_size, BATCH_SIZE, EMB_DIM, HIDDEN_DIM, SEQ_LENGTH, START_TOKEN, target_params)</span><br><span class="line">generate_samples(sess, target_lstm, BATCH_SIZE, generated_num, positive_file)</span><br></pre></td></tr></table></figure>
-<p>网络结构和Generator相同，网络参数是预先提供好的（参考论文中的说法，是利用正态分布随机生成的）</p>
-<h1 id="代码流程"><a href="#代码流程" class="headerlink" title="代码流程"></a>代码流程</h1><ol>
-<li><p>利用Oracle Model生成训练样本集合{P}</p>
-</li>
-<li><p>利用{P}预训练G（损失函数是negative log likelihood），训练120轮</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.pretrain_loss = -tf.reduce_sum(tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.num_emb, <span class="number">1.0</span>, <span class="number">0.0</span>) * tf.log(tf.clip_by_value(tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.num_emb]), <span class="number">1e-20</span>, <span class="number">1.0</span>))) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-<li><p>利用预训练好的G生成负样本集合{N}，利用{P}和{N}预训练D，训练50大轮（每轮都重新生成负样本，训练3小轮）</p>
-</li>
-<li><p>初始化roll-out网络</p>
-</li>
-<li><p>每训练一轮G，更新一次roll-out网络的参数，训练5大轮D（每轮都重新生成负样本，训练3小轮）。重复步骤5一共200次</p>
-</li>
-</ol>
-<h1 id="公式推导"><a href="#公式推导" class="headerlink" title="公式推导"></a>公式推导</h1><p>G输出的一个token的概率分布，theta是G的参数：<script type="math/tex">G_{\theta}(y_t|Y_{1:t-1})</script></p>
-<p>固定D后，D反馈给的G的reward，用于更新G的参数：<script type="math/tex">J(\theta)=E[R_T|s, \theta]=\sum_{a}G_{\theta}(a|s)Q_{D_\phi}(s, a)</script></p>
-<p>现在的问题在于计算（估计）：<script type="math/tex">Q_{D_\phi}(s=Y_{1:t-1}, a=y_t)</script></p>
-<p>当<script type="math/tex">t=T</script>时：<script type="math/tex">Q_{D_\phi}(s=Y_{1:T-1}, a=y_T)=D_{\phi}(Y_{1:T})</script></p>
-<p>当$t&lt;T$时，先用roll-out把<script type="math/tex">Y_{1:t}</script>补齐：<script type="math/tex">\{Y^{1}_{1:T}, Y^{2}_{1:T}, ..., Y^{N}_{1:T}\}=MC^{G_{\theta}}(Y_{1:t}, N)</script></p>
-<p>再利用上式：<script type="math/tex">Q_{D_\phi}(s=Y_{1:t-1}, a=y_t)=\frac{1}{N}\sum_{n} D_{\phi}(Y^{n}_{1:T})</script></p>
-<p>最后再对$J(\theta)$求导进行梯度下降：</p>
-<script type="math/tex; mode=display">\nabla_{\theta}J(\theta)=\sum^{T}_{t=1}\sum_{y_t}\nabla_{\theta}G_{\theta}(y_t|Y_{1:1:t-1})Q_{D_{\phi}}(Y_{1:t-1}, y_t)</script><script type="math/tex; mode=display">=\sum^{T}_{t=1}\sum_{y_t}G_{\theta}(y_t|Y_{1:1:t-1})\nabla_{\theta}logG_{\theta}(y_t|Y_{1:1:t-1})Q_{D_{\phi}}(Y_{1:t-1}, y_t)</script><script type="math/tex; mode=display">=\sum^{T}_{t=1}E[\nabla_{\theta}logG_{\theta}(y_t|Y_{1:1:t-1})Q_{D_{\phi}}(Y_{1:t-1}, y_t)]</script><h1 id="实际应用中的问题"><a href="#实际应用中的问题" class="headerlink" title="实际应用中的问题"></a>实际应用中的问题</h1><p>我需要用我们自有的真实数据替代Oracle Model生成的”真实数据“，因此会遇到以下问题：</p>
-<ol>
-<li>真实数据的数据量是不是足够训练GAN</li>
-<li>生成的词语不会超出输入的真实数据的词汇集合 — 即是优点也是缺点</li>
-<li>原模型中判断生成数据质量的方法不再可用 — 人工审核、BLEU等</li>
-<li><strong>自有的真实数据中句子的长度不再固定，我们需要把它切割成相同长度的序列（是否有影响）</strong> </li>
-<li><strong>生成器生成的的句子长度都是相同的，是否能够满足我们的需求（句子生成的终点判定）</strong></li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1204,7 +1173,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">posts</span>
               </a>
             </div>

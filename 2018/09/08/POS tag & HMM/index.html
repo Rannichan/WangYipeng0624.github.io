@@ -95,21 +95,18 @@
 
 
 
-<meta name="description" content="The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the">
+<meta name="description" content="POS TagPOS is short for “part of speech” which also means syntactic categories. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks. The tag of a">
 <meta name="keywords" content="CS544,NLP">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Syntax Tree And CKY Parser [CS544 USC]">
-<meta property="og:url" content="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/index.html">
+<meta property="og:title" content="POS tag &amp; HMM [CS544 USC]">
+<meta property="og:url" content="http://wangyp.tech/2018/09/08/POS tag & HMM/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
-<meta property="og:description" content="The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the">
+<meta property="og:description" content="POS TagPOS is short for “part of speech” which also means syntactic categories. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks. The tag of a">
 <meta property="og:locale" content="en">
-<meta property="og:image" content="https://wikimedia.org/api/rest_v1/media/math/render/svg/2543ae859dd620f858299855868ae6c2ed066323">
-<meta property="og:image" content="http://wangyp.tech/2018/09/12/Syntax%20Tree%20And%20CKY%20Parser/syntax_tree.jpg">
-<meta property="og:updated_time" content="2018-09-16T06:32:40.117Z">
+<meta property="og:updated_time" content="2018-09-18T04:57:34.337Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Syntax Tree And CKY Parser [CS544 USC]">
-<meta name="twitter:description" content="The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the">
-<meta name="twitter:image" content="https://wikimedia.org/api/rest_v1/media/math/render/svg/2543ae859dd620f858299855868ae6c2ed066323">
+<meta name="twitter:title" content="POS tag &amp; HMM [CS544 USC]">
+<meta name="twitter:description" content="POS TagPOS is short for “part of speech” which also means syntactic categories. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks. The tag of a">
 
 
 
@@ -139,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/"/>
+  <link rel="canonical" href="http://wangyp.tech/2018/09/08/POS tag & HMM/"/>
 
 
 
 
 
-  <title>Syntax Tree And CKY Parser [CS544 USC] | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>POS tag & HMM [CS544 USC] | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -262,7 +259,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/09/08/POS tag & HMM/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Wang Yipeng">
@@ -279,7 +276,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Syntax Tree And CKY Parser [CS544 USC]</h1>
+          <h1 class="post-title" itemprop="name headline">POS tag & HMM [CS544 USC]</h1>
         
 
         <div class="post-meta">
@@ -291,8 +288,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-12T23:24:56-07:00">
-                2018-09-12
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-08T09:33:13-07:00">
+                2018-09-08
               </time>
             
 
@@ -329,65 +326,31 @@
       
 
       
-        <p>The characteristics of the words and their relative location to each other allow us to generate a interpretation of a sentence even though we don’t really understand the sentence. It implies that the grammer structure of a sentence can help us understanding  it in some degree. Therefore, parsing a sentence into a syntax tree will be a very valuable work.</p>
-<h1 id="CFG-and-Syntax-Tree"><a href="#CFG-and-Syntax-Tree" class="headerlink" title="CFG and Syntax Tree"></a>CFG and Syntax Tree</h1><p>Context-free grammer (CFG) is a certain type of grammer. A context-free grammar G is defined by the 4-tuple:</p>
-<p><img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2543ae859dd620f858299855868ae6c2ed066323" alt="G=(V,\Sigma ,R,S)"></p>
-<p>V is a finite set of nonterminal characters, usually to be PoS tags.  Sigma is a finite set of terminals, the actural content of sentence. R is a finite set of rewrite rules.</p>
-<script type="math/tex; mode=display">
-V=\{S,NP,PP,VP,Vst,Det,V,N...\}</script><script type="math/tex; mode=display">
-\Sigma=\{time,flies,like,an,arrow\}</script><script type="math/tex; mode=display">
-R=\{S\rightarrow(NP,VP),S\rightarrow(Vst,NP),VP\rightarrow(V,NP)...\}</script><p>S is the start variable (or start symbol), used to represent the whole sentence (or program). It must be an element of V.</p>
-<p>Based on G, we can build a syntax tree of a given sentence (sequence of words). A example syntax tree looks like:</p>
-<img src="/2018/09/12/Syntax%20Tree%20And%20CKY%20Parser/syntax_tree.jpg">
-<h1 id="CKY-Parser-CKY-Algorithm"><a href="#CKY-Parser-CKY-Algorithm" class="headerlink" title="CKY Parser (CKY Algorithm)"></a>CKY Parser (CKY Algorithm)</h1><h2 id="How-CKY-wroks"><a href="#How-CKY-wroks" class="headerlink" title="How CKY wroks"></a>How CKY wroks</h2><p>How to parse a sentence into a syntax tree (or syntax trees)? Yes, CKY parser (algorithm) is the tool we need. CKY algorithm is dynamic programming algorithm. </p>
-<p>Let <em>s</em> denote the sentence (word sequence), <em>phrase(X, i, j)</em> denote the PoS tag for subsequence from xi to xj with <em>X</em> as root node:</p>
-<script type="math/tex; mode=display">
-s=(x_1,x_2,x_3,...,x_n),\ x_i\in\Sigma</script><script type="math/tex; mode=display">
-phrase(X,i,j),\ X\in V,\ 1\leq i,j\leq n</script><p>The recursive formular is:</p>
-<script type="math/tex; mode=display">
-phrase(X,i,j)=rewrite(X,Y,Z),\ phrase(Y,i,k),\ phrase(Z,k+1,j)</script><script type="math/tex; mode=display">
-X\rightarrow(Y,Z)\in R</script><script type="math/tex; mode=display">
-k\in\{i,i+1,...,j-1\}</script><p>The initial state is:</p>
-<script type="math/tex; mode=display">
-phrase(X,i,i)=rewrite(X,W),\ word(W,i,i)</script><script type="math/tex; mode=display">
-W\in\Sigma</script><p>If we traceback from the top, <em>phrase(X, 1, n)</em>, we can get all  possible syntax of the given sentence under the given CFG. Please refer to the CSCI544-slides for the pseudocode. My notation may be a little different from the slides for I am trying to make it more understandable &gt;_&lt;’’</p>
-<h1 id="Probabilistic-CKY-Parser-Vanilla-PCFGs"><a href="#Probabilistic-CKY-Parser-Vanilla-PCFGs" class="headerlink" title="Probabilistic CKY Parser (Vanilla PCFGs)"></a>Probabilistic CKY Parser (Vanilla PCFGs)</h1><h2 id="How-PCKY-works"><a href="#How-PCKY-works" class="headerlink" title="How PCKY works"></a>How PCKY works</h2><p>For a given sentence and a given CFG, there meybe (actually usually) more than one possible syntax tree. It will cause ambiguity. If we assign a ‘weight’ to every rule, we can calculate the weight of every possible tree and pick one from them withour ambiguity.</p>
-<p>Then it comes a question, how to define a ‘weight’ and how to pick it. If we define the weight of a rule a its possibility to occur, then all possible syntax tree will have a distribution. Based on this definition, we have a modified algorithm, probabilistic CKY parser (or PCFG).</p>
-<p>For given CFG, define T as all possible syntax tree, we are going to get p(t), the distribution over T and choose the syntax tree with the largest probability. </p>
-<p>Let <em>s</em> denote the sentence (word sequence), <em>T(X, i, j)</em> denote all possible syntax trees for subsequence from xi to xj with <em>X</em> as root node. Then define</p>
-<script type="math/tex; mode=display">
-\pi(X,i,j)=\max_{t\in T(X,i,j)}p(t)</script><p>Initial state:</p>
-<script type="math/tex; mode=display">
-\pi(X,i,i)=
-\left\{
-    \begin{aligned}
-    &p(X\rightarrow x_i)&if\ X\rightarrow x_i\in R\\
-    &0&otherwise 
-    \end{aligned}
-\right.</script><script type="math/tex; mode=display">
-p(X\rightarrow x_i)=\frac{count(X\rightarrow x_i)}{count(X)}</script><p>The recursive formular is:</p>
-<script type="math/tex; mode=display">
-\pi(X,i,j)=\max_{X\rightarrow(Y,Z)\in R,\ i\le k<j}p(X\rightarrow(Y,Z))\times\pi(Y,i,k)\times\pi(Z,k+1,j)</script><script type="math/tex; mode=display">
-p(X\rightarrow(Y,Z))=\frac{count(X\rightarrow(Y,Z))}{count(X)}</script><p>At last, the syntax tree we want is:</p>
-<script type="math/tex; mode=display">
-T_{best}=\mathop{\arg\max}_{t\in T(X,1,n),\ x\in V}p(t)</script><h2 id="Applicable-tasks"><a href="#Applicable-tasks" class="headerlink" title="Applicable tasks"></a>Applicable tasks</h2><ul>
-<li>Given a sentence and a CFG, to find the best parsing (syntax tree) of the sentence.</li>
-<li>Given a CFG, to get the probability of a sentence to be generated.</li>
+        <h1 id="POS-Tag"><a href="#POS-Tag" class="headerlink" title="POS Tag"></a>POS Tag</h1><p>POS is short for “part of speech” which also means <strong>syntactic categories</strong>. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks.</p>
+<p>The tag of a word depends on the word itself and the tags of surrounding words. Such a situation can be descripbed by HMM probabilistically.</p>
+<ul>
+<li>Open class words: It is also called content words. It could be nouns, verbs, adjectives or adverbs usually. There is no limit to what they are and can be added all the times.</li>
+<li>Closed class words: It is also called function words. It could be pronouns, determiners, prepositions or connectives usually. There are a limit number of these words. </li>
 </ul>
-<p>In task2, we need to add up probabilities of all possible parsing result of the sentence.</p>
-<h2 id="Generalizing"><a href="#Generalizing" class="headerlink" title="Generalizing"></a>Generalizing</h2><p>If we apply a -log() on both sides of the recursive formular, we get <strong>weighted CKY parser</strong>. And what we want becomes the syntax tree with the lowest weight (-log cost). PCKY is actually a special case of WCKY.</p>
-<p>WCKY can be generalized into <strong>semiring-weighted CKY</strong> (the most general algorithm). Just use semiring operation (should obey <strong>semiring axioms</strong>) to replace original specific operation.  Deatails could be found in CSCI544-slides. </p>
-<h2 id="Drawback-and-improvement"><a href="#Drawback-and-improvement" class="headerlink" title="Drawback and improvement"></a>Drawback and improvement</h2><p>The information of word relations does not contribute much to the building of the whole syntax tree of a sentence. <strong><em>(I really hope u guys could give some better explanation for this)</em></strong></p>
-<p>Instead of using PoS tags only (elements in V), we use tuple <strong>(head word, PoS tag)</strong> for each nonterminal character.</p>
-<p>original:</p>
+<h1 id="Different-Sets-of-POS-Tags"><a href="#Different-Sets-of-POS-Tags" class="headerlink" title="Different Sets of POS Tags"></a>Different Sets of POS Tags</h1><p>There are many different sets of POS tags based on different linguistic and practical considerations. We can choose to use one of them according to our specific task. </p>
+<p>Commonly used tag sets for English usually have 40 to 100 tag types. The <strong><a href="https://www.clips.uantwerpen.be/pages/mbsp-tags" target="_blank" rel="noopener">Penn Treebank</a></strong> has 45 tags.</p>
+<h1 id="Modeling-POS-Tagging-with-HMM-1"><a href="#Modeling-POS-Tagging-with-HMM-1" class="headerlink" title="Modeling POS Tagging with HMM[1]"></a>Modeling POS Tagging with HMM[1]</h1><p>What we are interested in is P(W|T) and P(T) where W and T are sequences of length N.</p>
+<ul>
+<li>Assumption 1: Each tag is conditioned only on the previous tag. This is so-called <strong>Markov Property</strong></li>
+<li>Assumption 2: Each word is conditioned only on its tag.</li>
+</ul>
+<p>Based on these two assumptions, we can use HMM to describe the POS tagging process. </p>
 <script type="math/tex; mode=display">
-S\rightarrow NP,\ VP</script><p>After <strong>lexicalized</strong>:</p>
+argmax_{T}P(T|W)=argmax_{T}P(W|T)P(T)</script><p>To solve this optimization problem, we can use <strong>Greedy Algorithm</strong>, i.e. at each time step, compute the possibility under each possible tag given the previous tag and choose the best one. It is easy to know the time complexity of greedy algorithm is <strong>O(|T|*N)</strong>.</p>
+<p>Greedy algorithm’s result is suboptimal. To get the optimal tag sequence we need <strong>Viterbi Algorithm[2]</strong>. If we use T to denote tag sequence, W to denote word sequence, and v[T, W] to denote be the probability of the best T-W pair, the algorithm can be described with formulas below: </p>
 <script type="math/tex; mode=display">
-S(loves,VB)\rightarrow NP(John,NNP),\ VP(loves,VB)</script><p><strong>References:</strong></p>
-<p><a href="https://github.com/isi-nlp/csci_544_fa_18_slides/blob/master/pcfg_0914.pptx" target="_blank" rel="noopener">https://github.com/isi-nlp/csci_544_fa_18_slides/blob/master/pcfg_0914.pptx</a></p>
-<p><a href="https://blog.csdn.net/qq_37171771/article/details/79342819" target="_blank" rel="noopener">https://blog.csdn.net/qq_37171771/article/details/79342819)</a></p>
-<p><a href="https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar</a></p>
-<p><a href="http://ccl.pku.edu.cn/doubtfire/Course/Computational%20Linguistics/contents/CYK_parsing.pdf" target="_blank" rel="noopener">http://ccl.pku.edu.cn/doubtfire/Course/Computational%20Linguistics/contents/CYK_parsing.pdf</a></p>
+T_{1:i}=[t_1,t_2,...,t_i]</script><script type="math/tex; mode=display">
+W_{1:i}=[w_1,w_2,...,w_i]</script><script type="math/tex; mode=display">
+v[T_{1:i},W_{1:i}]=max_{t_{i}}v[T_{1:i-1},W_{1:i-1}]\times P(t_{i}|t_{i-1})\times P(W_{i}|t_{i})</script><p><strong>[1] Hidden Markov Model (HMM)</strong> is a statistical <a href="https://en.wikipedia.org/wiki/Markov_model" target="_blank" rel="noopener">Markov model</a> in which the system being modeled is assumed to be a <a href="https://en.wikipedia.org/wiki/Markov_process" target="_blank" rel="noopener">Markov process</a> with unobserved (i.e. <em>hidden</em>) states.</p>
+<p>In simpler Markov models (like a <a href="https://en.wikipedia.org/wiki/Markov_chain" target="_blank" rel="noopener">Markov chain</a>), the state is directly visible to the observer, and therefore the state transition probabilities are the only parameters, while in the hidden Markov model, <strong><em>the state (i.e. POS tag in our discussion)</em></strong> is not directly visible, but the <strong><em>output (i.e. Word)</em></strong>, dependent on the state, is visible. Each state has a probability distribution over the possible output tokens. Therefore, the sequence of tokens generated by an HMM gives some information about the sequence of states.</p>
+<p><strong>[2] Viterbi algorithm</strong> is a <a href="https://en.wikipedia.org/wiki/Dynamic_programming" target="_blank" rel="noopener">dynamic programming</a> algorithm for finding the most likely sequence of hidden states—called the <strong>Viterbi path</strong>—that results in a sequence of observed events, especially in the context of Markov information sources and hidden Markov models.</p>
+<p>Intuition: the best path of length i ending in state must include the best path of length i-1 to the previous state.</p>
+<p>Baisc steps: Best path of length i-1 to each state —&gt; Extend each path to state t and find the best one —&gt; Best path of length i in state t. </p>
 
       
     </div>
@@ -420,8 +383,8 @@ S(loves,VB)\rightarrow NP(John,NNP),\ VP(loves,VB)</script><p><strong>References
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/09/08/POS tag & HMM/" rel="next" title="POS tag & HMM [CS544 USC]">
-                <i class="fa fa-chevron-left"></i> POS tag & HMM [CS544 USC]
+              <a href="/2018/07/29/What gonna happen next/" rel="next" title="What gonna happen next?">
+                <i class="fa fa-chevron-left"></i> What gonna happen next?
               </a>
             
           </div>
@@ -429,6 +392,10 @@ S(loves,VB)\rightarrow NP(John,NNP),\ VP(loves,VB)</script><p><strong>References
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/12/Syntax Tree And CKY Parser/" rel="prev" title="Syntax Tree And CKY Parser [CS544 USC]">
+                Syntax Tree And CKY Parser [CS544 USC] <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -566,7 +533,7 @@ S(loves,VB)\rightarrow NP(John,NNP),\ VP(loves,VB)</script><p><strong>References
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CFG-and-Syntax-Tree"><span class="nav-number">1.</span> <span class="nav-text">CFG and Syntax Tree</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CKY-Parser-CKY-Algorithm"><span class="nav-number">2.</span> <span class="nav-text">CKY Parser (CKY Algorithm)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#How-CKY-wroks"><span class="nav-number">2.1.</span> <span class="nav-text">How CKY wroks</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Probabilistic-CKY-Parser-Vanilla-PCFGs"><span class="nav-number">3.</span> <span class="nav-text">Probabilistic CKY Parser (Vanilla PCFGs)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#How-PCKY-works"><span class="nav-number">3.1.</span> <span class="nav-text">How PCKY works</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Applicable-tasks"><span class="nav-number">3.2.</span> <span class="nav-text">Applicable tasks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Generalizing"><span class="nav-number">3.3.</span> <span class="nav-text">Generalizing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Drawback-and-improvement"><span class="nav-number">3.4.</span> <span class="nav-text">Drawback and improvement</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#POS-Tag"><span class="nav-number">1.</span> <span class="nav-text">POS Tag</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Different-Sets-of-POS-Tags"><span class="nav-number">2.</span> <span class="nav-text">Different Sets of POS Tags</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Modeling-POS-Tagging-with-HMM-1"><span class="nav-number">3.</span> <span class="nav-text">Modeling POS Tagging with HMM[1]</span></a></li></ol></div>
             
 
           </div>
