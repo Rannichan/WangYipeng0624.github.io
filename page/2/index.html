@@ -258,6 +258,194 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/06/LeakGAN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/myavatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/06/LeakGAN/" itemprop="url">LeakGAN - a Long Text Generating Model</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-06T05:07:34-07:00">
+                2018-07-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>LeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator, LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminator into the training of Generator, which greatly improve the performance of generating long text. Some other tricks are also included in the experioment of LeakGAN aiming to solving some problems showed in SeqGAN. </p>
+<h1 id="Core-problem-—-Long-text-generating"><a href="#Core-problem-—-Long-text-generating" class="headerlink" title="Core problem — Long text generating"></a>Core problem — Long text generating</h1><p>In my previous experiment of SeqGAN, some generating results are shown bellow:</p>
+<ul>
+<li>: ( data is stored in internal server and can not be fetched out</li>
+</ul>
+<p>From the examples above, we can find the result is very bad. It mainly because:</p>
+<ol>
+<li>Information contained in Reward is not enough for generating long test.</li>
+<li>LSTM used in Generator is not capable to form long-term memory.</li>
+</ol>
+<p>To solve the 1st problem, LeakGAN uses feature map outputted by Discriminator’s CNN-Maxpooling layer as leaked information to train Manager to generate goal vectors. Then, Worker uses goal vectors and Discriminator’s reward together to generate sequences.</p>
+<h2 id="Model-structure"><a href="#Model-structure" class="headerlink" title="Model structure"></a>Model structure</h2><img src="/2018/07/06/LeakGAN/model_structure.jpg">
+<p><strong>Discriminator-Feature Extractor CNN</strong></p>
+<script type="math/tex; mode=display">f_t=\digamma(S_t; \phi_f)</script><p><strong>Generator-Manager LSTM</strong></p>
+<script type="math/tex; mode=display">\hat{g_t}, h^m_t=M(f_t, h^m_{t-1}; \theta_m)</script><script type="math/tex; mode=display">g_t=\hat{g_t}/||\hat{g_t}||</script><script type="math/tex; mode=display">w_t=W_{\psi}(\sum^c_{i=1}g_{t-i})</script><p><strong>Generator-Worker LSTM</strong></p>
+<script type="math/tex; mode=display">O_t, h_t^{w}=W(x_t, h^w_{t-1}; \theta_w)</script><script type="math/tex; mode=display">G_{\theta}(x_{t+1}|s_t)=softmax(O_t\centerdot w_t/\alpha)</script><h2 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h2><h3 id="Generator-training"><a href="#Generator-training" class="headerlink" title="Generator training"></a>Generator training</h3><p>Manager and Worker are trained alternatively. One should be fixed when the other is in training. Manager is trained to generate advantageous directions. Worker is trained to follow the directions.</p>
+<p><strong>Gradient of Manager <script type="math/tex">\nabla_{\theta_m}g_t</script></strong></p>
+<ul>
+<li><p><em>Expected reward under current policy</em></p>
+<script type="math/tex; mode=display">E[r_t]=Q(f_t, g_t)=Q_F(s_t, g_t)</script></li>
+<li><p><em>Cosine similarity between change of feature representation and goal vector</em></p>
+<script type="math/tex; mode=display">d_{cos}(f_{t+c}-f_t, g_t(\theta_m))</script></li>
+<li><p><em>Policy gradient</em></p>
+<script type="math/tex; mode=display">\nabla_{\theta_m}g_t=-Q_F(s_t, g_t)\nabla_{\theta_m}d_{cos}(f_{t+c}-f_t, g_t(\theta_m))</script></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">self.goal_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(self.reward,</span><br><span class="line">                <span class="number">1</span>-tf.losses.cosine_distance(</span><br><span class="line">                  	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">                  	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>), </span><br><span class="line">                  	<span class="number">2</span></span><br><span class="line">                )</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size / self.step_size)</span><br></pre></td></tr></table></figure>
+<p><strong>Gradient of Worker</strong></p>
+<ul>
+<li><p><em>Intrinsic reward</em></p>
+<script type="math/tex; mode=display">r^I_t=\frac{1}{c}\sum^c_{i=1}d_{cos}(f_t-f_{t-i}, g_{t-i})</script></li>
+</ul>
+<ul>
+<li><p><em>Expected intrinsic reward over all possible actions</em></p>
+<script type="math/tex; mode=display">\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)</script></li>
+<li><p><em>Expected intrinsic reward over all possible actions &amp; all current states</em></p>
+<script type="math/tex; mode=display">E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)]</script></li>
+<li><p><em>Policy gradient</em></p>
+<script type="math/tex; mode=display">\nabla_{\theta_w}E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G}[\sum_{x_t}r^I_t\nabla_{\theta_w}W]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW\frac{\nabla_{\theta_w}W}{W}]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G, x_t\sim W}[r^I_t\nabla_{\theta_w}logW]</script></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">self.Worker_Reward = <span class="number">1</span>-tf.losses.cosine_distance(tf.nn.l2_normalize(self.all_sub_features,<span class="number">2</span>),</span><br><span class="line">                                                 tf.nn.l2_normalize(self.all_sub_goals,<span class="number">2</span>), </span><br><span class="line">                                                 <span class="number">2</span>)</span><br><span class="line">self.worker_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(</span><br><span class="line">      	self.Worker_Reward,</span><br><span class="line">      	tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>) * \</span><br><span class="line">      	tf.log(tf.clip_by_value(tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), <span class="number">1e-20</span>, <span class="number">1.0</span>))</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
+<p><strong>Pretraining of Manager</strong></p>
+<p>Using real text,</p>
+<script type="math/tex; mode=display">\hat{f_t}=F(\hat{s_t})</script><script type="math/tex; mode=display">\nabla^{pre}_{\theta_m}g_t = -\nabla_{\theta_m}d_{cos}(\hat{f_{t+c}}-\hat{f_t}, g_t(\theta_m))</script><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sub_feature = tf.cond(i % step_size &gt; <span class="number">0</span>, </span><br><span class="line">                      <span class="keyword">lambda</span>: sub_feature,</span><br><span class="line">                      <span class="keyword">lambda</span>: tf.cond(i &gt; <span class="number">0</span>, </span><br><span class="line">                                      <span class="keyword">lambda</span>:sub_feature.write(i/step_size<span class="number">-1</span>,tf.subtract(feature,feature_array.read(i - step_size))),</span><br><span class="line">                    				  <span class="keyword">lambda</span>: sub_feature</span><br><span class="line">                                     )</span><br><span class="line">                     )</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.sub_feature = self.sub_feature.stack() <span class="comment"># seq_length x batch_size x num_filter</span></span><br><span class="line">self.sub_feature = tf.transpose(self.sub_feature, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.real_goal_array = self.real_goal_array.stack()</span><br><span class="line">self.real_goal_array = tf.transpose(self.real_goal_array, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.pretrain_goal_loss = -tf.reduce_sum(</span><br><span class="line">	<span class="number">1</span> - tf.losses.cosine_distance(</span><br><span class="line">    	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">      	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>),</span><br><span class="line">		<span class="number">2</span></span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size/self.step_size)</span><br></pre></td></tr></table></figure>
+<p><strong>Pretraining of Worker</strong></p>
+<p><em>MLE</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">g_predictions = tf.cond(</span><br><span class="line">                i&gt;<span class="number">0</span>,</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions.write(i<span class="number">-1</span>, tf.nn.softmax(x_logits)),</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions)</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.g_predictions = tf.transpose(self.g_predictions.stack(), perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.cross_entropy = tf.reduce_sum(</span><br><span class="line">  		self.g_predictions * tf.log(tf.clip_by_value(self.g_predictions, <span class="number">1e-20</span>, <span class="number">1.0</span>))</span><br><span class="line">	) / (self.batch_size * self.sequence_length * self.vocab_size)</span><br><span class="line">self.pretrain_worker_loss = -tf.reduce_sum(</span><br><span class="line">  		tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>)* \</span><br><span class="line">  		tf.log(tf.clip_by_value(</span><br><span class="line">        	tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), </span><br><span class="line">          	<span class="number">1e-20</span>, <span class="number">1.0</span>)</span><br><span class="line">        )</span><br><span class="line">	) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
+<h3 id="Discriminator-Training"><a href="#Discriminator-Training" class="headerlink" title="Discriminator Training"></a>Discriminator Training</h3><p><strong>Pretraining</strong></p>
+<p>Adam gradient descent with cross entropy loss </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'D_update'</span>):</span><br><span class="line">	self.D_l2_loss = tf.constant(<span class="number">0.0</span>)</span><br><span class="line">	self.FeatureExtractor_unit = self.FeatureExtractor()</span><br><span class="line">    <span class="comment"># Train for Discriminator</span></span><br><span class="line">    <span class="keyword">with</span> tf.variable_scope(<span class="string">"feature"</span>) <span class="keyword">as</span> self.feature_scope:</span><br><span class="line">    	D_feature = self.FeatureExtractor_unit(self.D_input_x,</span><br><span class="line">                                               self.dropout_keep_prob)</span><br><span class="line">        self.feature_scope.reuse_variables()</span><br><span class="line">    D_scores, D_predictions,self.ypred_for_auc = self.classification(D_feature)</span><br><span class="line">    losses = tf.nn.softmax_cross_entropy_with_logits(logits=D_scores, </span><br><span class="line">                                                     labels=self.D_input_y)</span><br><span class="line">    self.D_loss = tf.reduce_mean(losses) + self.l2_reg_lambda * self.D_l2_loss</span><br><span class="line">    self.D_params = [param <span class="keyword">for</span> param <span class="keyword">in</span> tf.trainable_variables() \ </span><br><span class="line">                     <span class="keyword">if</span> <span class="string">'Discriminator'</span> <span class="keyword">or</span> <span class="string">'FeatureExtractor'</span> <span class="keyword">in</span> param.name]</span><br><span class="line">    d_optimizer = tf.train.AdamOptimizer(<span class="number">5e-5</span>)</span><br><span class="line">    D_grads_and_vars = d_optimizer.compute_gradients(self.D_loss, </span><br><span class="line">                                                     self.D_params, </span><br><span class="line">                                                     aggregation_method=<span class="number">2</span>)</span><br><span class="line">    self.D_train_op = d_optimizer.apply_gradients(D_grads_and_vars)</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 id="Problem-2-—-Gradient-Vanishing"><a href="#Problem-2-—-Gradient-Vanishing" class="headerlink" title="Problem 2 — Gradient Vanishing"></a>Problem 2 — Gradient Vanishing</h1><p>There will be a severe gradient vanishing problem during the training of GAN when D is much stronger than  G. The reward is too small to update the parameters in G. Therefore it needs to  be rescaled.</p>
+<p><strong>Trick — Bootstrapped Rescaled Activation</strong></p>
+<p>Reward matrix is <script type="math/tex">R_{B*T}</script> with batch-size B and sequence-length T.</p>
+<p>Rescale it by doing <script type="math/tex">R_{i,t} = \sigma(\delta\centerdot(0.5-\frac{rank(i)}{B}))</script>.</p>
+<ul>
+<li>Expectation and variance of the reward in each mini-batch are constant!</li>
+<li>In general, all ranking model can prevent the gradient vanishing problem (<a href="http://papers.nips.cc/paper/6908-adversarial-ranking-for-language-generation.pdf" target="_blank" rel="noopener">More explanation — RankGAN</a>).</li>
+</ul>
+<h1 id="Problem-3-—-Mode-Collapse"><a href="#Problem-3-—-Mode-Collapse" class="headerlink" title="Problem 3 — Mode Collapse"></a>Problem 3 — Mode Collapse</h1><p>These are several examples generated by SeqGAN I trained before:</p>
+<ul>
+<li>: ( data is stored in internal server and can not be fetched out</li>
+</ul>
+<p>As we can see, the generator is inclined to produce similar or  same sequences, which is called <strong>Mode Collapse</strong>. It is because… You can find more about mode collapse from <a href="https://www.quora.com/What-causes-mode-collapse-in-GANs" target="_blank" rel="noopener">Quora</a></p>
+<p><strong>Trick — Interleaved Training</strong></p>
+<p>Instead of using full GAN training (unsupervised), it adopt a MLE training (supervised) after 15 epochs of GAN training to prevent the Worker get into some bad local minimums.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> total_batch % <span class="number">15</span> == <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">for</span> epoch <span class="keyword">in</span> xrange(<span class="number">1</span>):</span><br><span class="line">    loss = pre_train_epoch(sess, leakgan, gen_data_loader)</span><br></pre></td></tr></table></figure>
+<h1 id="Problem-4-—-Balance-the-exploration-and-exploitation"><a href="#Problem-4-—-Balance-the-exploration-and-exploitation" class="headerlink" title="Problem 4* — Balance the exploration and exploitation"></a>Problem 4* — Balance the exploration and exploitation</h1><p><strong>Trick — Temperature Control</strong></p>
+<p>Higher temperature for training the model — exploration</p>
+<p>Lower temperature for generating samples — exploitation</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/06/28/SeqGAN/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -764,7 +952,7 @@ corpora.Dictionary.load()
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">posts</span>
               </a>
             </div>

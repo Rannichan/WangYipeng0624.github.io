@@ -95,18 +95,23 @@
 
 
 
-<meta name="description" content="POS TagPOS is short for “part of speech” which also means syntactic categories. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks. The tag of a">
+<meta name="description" content="Definition of NER task: to indentify all mentions of named entities (people, organizations, locations, etc.). Such a task can be boiling down to a sequence tagging problem (given a sequence of tokens,">
 <meta name="keywords" content="NLP,CS544">
 <meta property="og:type" content="article">
-<meta property="og:title" content="POS tag &amp; HMM [CS544 USC]">
-<meta property="og:url" content="http://wangyp.tech/2018/09/08/POS tag & HMM/index.html">
+<meta property="og:title" content="Name Entity Recognition [CS544 USC]">
+<meta property="og:url" content="http://wangyp.tech/2018/10/20/ner/index.html">
 <meta property="og:site_name" content="Yipeng&#39;s Blog">
-<meta property="og:description" content="POS TagPOS is short for “part of speech” which also means syntactic categories. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks. The tag of a">
+<meta property="og:description" content="Definition of NER task: to indentify all mentions of named entities (people, organizations, locations, etc.). Such a task can be boiling down to a sequence tagging problem (given a sequence of tokens,">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-09-18T04:57:34.337Z">
+<meta property="og:image" content="http://wangyp.tech/2018/10/20/ner/hmm.jpg">
+<meta property="og:image" content="http://wangyp.tech/2018/10/20/ner/memm.jpg">
+<meta property="og:image" content="http://wangyp.tech/2018/10/20/ner/memm2.jpg">
+<meta property="og:image" content="http://wangyp.tech/2018/10/20/ner/crf.jpg">
+<meta property="og:updated_time" content="2018-10-23T06:52:22.108Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="POS tag &amp; HMM [CS544 USC]">
-<meta name="twitter:description" content="POS TagPOS is short for “part of speech” which also means syntactic categories. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks. The tag of a">
+<meta name="twitter:title" content="Name Entity Recognition [CS544 USC]">
+<meta name="twitter:description" content="Definition of NER task: to indentify all mentions of named entities (people, organizations, locations, etc.). Such a task can be boiling down to a sequence tagging problem (given a sequence of tokens,">
+<meta name="twitter:image" content="http://wangyp.tech/2018/10/20/ner/hmm.jpg">
 
 
 
@@ -136,13 +141,13 @@
 
 
 
-  <link rel="canonical" href="http://wangyp.tech/2018/09/08/POS tag & HMM/"/>
+  <link rel="canonical" href="http://wangyp.tech/2018/10/20/ner/"/>
 
 
 
 
 
-  <title>POS tag & HMM [CS544 USC] | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>Name Entity Recognition [CS544 USC] | Yipeng's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -259,7 +264,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/09/08/POS tag & HMM/">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/10/20/ner/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Wang Yipeng">
@@ -276,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">POS tag & HMM [CS544 USC]</h1>
+          <h1 class="post-title" itemprop="name headline">Name Entity Recognition [CS544 USC]</h1>
         
 
         <div class="post-meta">
@@ -288,8 +293,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-08T09:33:13-07:00">
-                2018-09-08
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-20T10:32:26-07:00">
+                2018-10-20
               </time>
             
 
@@ -326,31 +331,128 @@
       
 
       
-        <h1 id="POS-Tag"><a href="#POS-Tag" class="headerlink" title="POS Tag"></a>POS Tag</h1><p>POS is short for “part of speech” which also means <strong>syntactic categories</strong>. POS tagging is the first step toward full syntactic analysis and it is often good features for other tasks.</p>
-<p>The tag of a word depends on the word itself and the tags of surrounding words. Such a situation can be descripbed by HMM probabilistically.</p>
-<ul>
-<li>Open class words: It is also called content words. It could be nouns, verbs, adjectives or adverbs usually. There is no limit to what they are and can be added all the times.</li>
-<li>Closed class words: It is also called function words. It could be pronouns, determiners, prepositions or connectives usually. There are a limit number of these words. </li>
-</ul>
-<h1 id="Different-Sets-of-POS-Tags"><a href="#Different-Sets-of-POS-Tags" class="headerlink" title="Different Sets of POS Tags"></a>Different Sets of POS Tags</h1><p>There are many different sets of POS tags based on different linguistic and practical considerations. We can choose to use one of them according to our specific task. </p>
-<p>Commonly used tag sets for English usually have 40 to 100 tag types. The <strong><a href="https://www.clips.uantwerpen.be/pages/mbsp-tags" target="_blank" rel="noopener">Penn Treebank</a></strong> has 45 tags.</p>
-<h1 id="Modeling-POS-Tagging-with-HMM-1"><a href="#Modeling-POS-Tagging-with-HMM-1" class="headerlink" title="Modeling POS Tagging with HMM[1]"></a>Modeling POS Tagging with HMM[1]</h1><p>What we are interested in is P(W|T) and P(T) where W and T are sequences of length N.</p>
-<ul>
-<li>Assumption 1: Each tag is conditioned only on the previous tag. This is so-called <strong>Markov Property</strong></li>
-<li>Assumption 2: Each word is conditioned only on its tag.</li>
-</ul>
-<p>Based on these two assumptions, we can use HMM to describe the POS tagging process. </p>
+        <p>Definition of NER task: to indentify all mentions of named entities (people, organizations, locations, etc.). Such a task can be boiling down to a <strong>sequence tagging problem</strong> (given a sequence of tokens, output a sequence of corresponding labels). </p>
+<p>In this post, I am going to introduce three ways to model and complete this task, and understand intrinsic relation and difference among these methods.</p>
+<h1 id="Generative-V-S-discriminative-models"><a href="#Generative-V-S-discriminative-models" class="headerlink" title="Generative V.S. discriminative models"></a>Generative V.S. discriminative models</h1><p>Referenced paper: <a href="http://robotics.stanford.edu/%7Eang/papers/nips01-discriminativegenerative.pdf" target="_blank" rel="noopener">2001, Andrew Y. Ng and Michale I. Jordan</a></p>
+<p>Before looking into detailed algorithms , we need to figure out two categories of models which those algorithms are based on. First, I am going to list relations and differences between generative and discrominative model directly. Then I will provide an example to help you understand this stuff intuitively.</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Generative model</th>
+<th>Discriminative model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Difference</td>
+<td>Model the joint probability of label <strong>y</strong> and sample <strong>x</strong>, i.e. <strong>P(x,y)</strong></td>
+<td>Model the conditional probability of label <strong>y</strong> and sample <strong>x</strong></td>
+</tr>
+<tr>
+<td>Relation</td>
+<td>Can get discriminative model by using Bayes formular from generative model</td>
+<td>Not the opposite</td>
+</tr>
+<tr>
+<td>Feature</td>
+<td><strong>1)</strong> Contain more infornation inside the model than discriminative model; <strong>2)</strong> Can be used in unsupervised learning; <strong>3)</strong> Is competible with online learning method and missing data situation;</td>
+<td><strong>1)</strong> Need labeled data and suitabe for (semi-)supervised learning; <strong>2)</strong> Easier to train and can get better performance in classification tasks in general. <strong>3)</strong> It is free to design features; <strong>4)</strong> Cannot give a full picture of the whole training data; <strong>5)</strong> Black box</td>
+</tr>
+<tr>
+<td>Example</td>
+<td>Naive bayes; HMMs; Markov random fields, etc.</td>
+<td>Logistic regression; SVMs; Neural networks; Conditional random fields, etc.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Example:</p>
+<p>Suppose we have following training data <code>(1,0), (1,0), (2,0), (2,1)</code>.</p>
+<p>Generative model learns joint probability distribution $P(x,y)$ form it:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>y = 0</th>
+<th>y = 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x = 1</td>
+<td>1/2</td>
+<td>0</td>
+</tr>
+<tr>
+<td>x = 2</td>
+<td>1/4</td>
+<td>1/4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Discriminative model learns conditional probability distribution $P(y|x)$ from it: </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>y = 0</th>
+<th>y = 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x = 1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>x = 2</td>
+<td>1/2</td>
+<td>1/2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The distribution $P(y|x)$ is the natural distribution for classifying a given sample $x$ into a class $y$, which is why algorithms that model this directly are called discriminative algorithms. Generative algorithms model $P(x,y)$, which can be tranformed into $P(y|x)$ by applying Bayes rule and then used for classification. However, the distribution $P(x,y)$ can also be used for other purposes because it provides a full picture of the whole training set. For example you could use $p(x,y)$ to generate likely $(x,y)$ pairs.</p>
+<h1 id="Independent-Classifiers"><a href="#Independent-Classifiers" class="headerlink" title="Independent Classifiers"></a>Independent Classifiers</h1><p>$t$ is the tag sequence to be predicted. $w$ is given word sequence. We want to model $P(t|w)$ and do prediction based on this ($argmax_{\mathbf{t}}P(\mathbf{t}|\mathbf{w})$). Same do other following models.</p>
 <script type="math/tex; mode=display">
-argmax_{T}P(T|W)=argmax_{T}P(W|T)P(T)</script><p>To solve this optimization problem, we can use <strong>Greedy Algorithm</strong>, i.e. at each time step, compute the possibility under each possible tag given the previous tag and choose the best one. It is easy to know the time complexity of greedy algorithm is <strong>O(|T|*N)</strong>.</p>
-<p>Greedy algorithm’s result is suboptimal. To get the optimal tag sequence we need <strong>Viterbi Algorithm[2]</strong>. If we use T to denote tag sequence, W to denote word sequence, and v[T, W] to denote be the probability of the best T-W pair, the algorithm can be described with formulas below: </p>
+P(\mathbf{t}|\mathbf{w})=\Pi_{i}P(t_i|\mathbf{w})</script><h1 id="Hidden-Markove-models-HMMs"><a href="#Hidden-Markove-models-HMMs" class="headerlink" title="Hidden Markove models (HMMs)"></a>Hidden Markove models (HMMs)</h1><script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=\Pi_{i}P(w_i|t_i)P(t_i|t_{i-1})</script><img src="/2018/10/20/ner/hmm.jpg">
+<p>A brief deriving process is showed below:</p>
 <script type="math/tex; mode=display">
-T_{1:i}=[t_1,t_2,...,t_i]</script><script type="math/tex; mode=display">
-W_{1:i}=[w_1,w_2,...,w_i]</script><script type="math/tex; mode=display">
-v[T_{1:i},W_{1:i}]=max_{t_{i}}v[T_{1:i-1},W_{1:i-1}]\times P(t_{i}|t_{i-1})\times P(W_{i}|t_{i})</script><p><strong>[1] Hidden Markov Model (HMM)</strong> is a statistical <a href="https://en.wikipedia.org/wiki/Markov_model" target="_blank" rel="noopener">Markov model</a> in which the system being modeled is assumed to be a <a href="https://en.wikipedia.org/wiki/Markov_process" target="_blank" rel="noopener">Markov process</a> with unobserved (i.e. <em>hidden</em>) states.</p>
-<p>In simpler Markov models (like a <a href="https://en.wikipedia.org/wiki/Markov_chain" target="_blank" rel="noopener">Markov chain</a>), the state is directly visible to the observer, and therefore the state transition probabilities are the only parameters, while in the hidden Markov model, <strong><em>the state (i.e. POS tag in our discussion)</em></strong> is not directly visible, but the <strong><em>output (i.e. Word)</em></strong>, dependent on the state, is visible. Each state has a probability distribution over the possible output tokens. Therefore, the sequence of tokens generated by an HMM gives some information about the sequence of states.</p>
-<p><strong>[2] Viterbi algorithm</strong> is a <a href="https://en.wikipedia.org/wiki/Dynamic_programming" target="_blank" rel="noopener">dynamic programming</a> algorithm for finding the most likely sequence of hidden states—called the <strong>Viterbi path</strong>—that results in a sequence of observed events, especially in the context of Markov information sources and hidden Markov models.</p>
-<p>Intuition: the best path of length i ending in state must include the best path of length i-1 to the previous state.</p>
-<p>Baisc steps: Best path of length i-1 to each state —&gt; Extend each path to state t and find the best one —&gt; Best path of length i in state t. </p>
+P(\mathbf{t}|\mathbf{w})=P(\mathbf{w},\mathbf{t})/P(\mathbf{w})\propto P(\mathbf{w},\mathbf{t})=P(\mathbf{w}|\mathbf{t})P(\mathbf{t})=\Pi_{i}P(w_i|t_i)P(t_i|t_{i-1})</script><p>It is easy to know what we model here is the joint probability distribution $P(w,t)$. Therefore, <strong>HMM is a generative model</strong>. </p>
+<p>The last step is because 2 assuptions. And the algorithm to find optimal $t$ to maximize $P(t|w)$ is <strong>Viterbi algorithm</strong>. Detailed infomation of the 2 assuptions and implement of the algorithm can be found <a href="http://wangyp.tech/2018/09/08/POS%20tag%20&amp;%20HMM/">here</a>.</p>
+<h1 id="Maximunm-entropy-Markov-models-MEMMs"><a href="#Maximunm-entropy-Markov-models-MEMMs" class="headerlink" title="Maximunm entropy Markov models (MEMMs)"></a>Maximunm entropy Markov models (MEMMs)</h1><script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=\Pi_{i}P(t_i|w_i,t_{i-1})</script><img src="/2018/10/20/ner/memm.jpg"> 
+<p>What we model here is conditional probability distribution $P(t|w)$. Therefore, MEMM is a discriminative model.</p>
+<p>Now, lets parameterize it:</p>
+<script type="math/tex; mode=display">
+P(t_i|w_i,t_{i-1})=softmax(\mathbf{S})_{i}</script><script type="math/tex; mode=display">
+\mathbf{S}_i=s(t_i,t_{i-1},w_i)</script><script type="math/tex; mode=display">
+s(t_i,t_{i-1},w_i)=\sum_{k}\lambda_kf_k(t_i,t_{i-1},w_i)</script><p>Where:</p>
+<ul>
+<li>$f_k$ is <strong>feature function</strong> (can be disigned freely, like emission-like feature, transition-like feature, etc.).</li>
+<li>$\lambda$ is <strong>weight</strong> associated with each specific type of feature. </li>
+<li>$s()$ is <strong>score function</strong>.</li>
+<li>S is the vector consisting of all scores.</li>
+<li>Nomalize S using softmax function then get the probability we want.</li>
+</ul>
+<p><strong>More about MEMMS</strong></p>
+<p>Emission features can go across multiple observations. It is especially usefule for shallow parsing and NER tasks.</p>
+<script type="math/tex; mode=display">
+s(t_i,t_{i-1},w_i)=\sum_k\lambda_kf_k(t_i,t_{i-1},\mathbf{w})</script><img src="/2018/10/20/ner/memm2.jpg">
+<p>[Does it has any relation with attention mechanism?]</p>
+<h2 id="Conditional-Random-Field-CRF"><a href="#Conditional-Random-Field-CRF" class="headerlink" title="Conditional Random Field (CRF)"></a>Conditional Random Field (CRF)</h2><p>In MEMMs, we only consider the dependency among <script type="math/tex">t_{i}</script>,  <script type="math/tex">t_{i-1}</script>,  <script type="math/tex">\mathbf{w}</script>. But in some cases, like <strong>Label biased problem</strong>. Therefore, we want to model global dependency. This is the intuition of CRF.</p>
+<script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=\frac{S(\mathbf{t},\mathbf{w})}{\sum_{\mathbf{t}^\prime}\exp S(\mathbf{t}^{\prime},\mathbf{w})}</script><script type="math/tex; mode=display">
+S(\mathbf{t},\mathbf{w})=\sum_i(\sum_k\lambda_kf_k(t_i,\mathbf{w}))+\sum_l\gamma_lg_l(t_i,t_{i-1},\mathbf{w}))</script><img src="/2018/10/20/ner/crf.jpg">
+<p>Normalize globally, and score entire sequence directly.</p>
+<p>What we model here is conditional probability distribution $P(t|w)$. Therefore, CRF is a discriminative model.</p>
 
       
     </div>
@@ -383,8 +485,8 @@ v[T_{1:i},W_{1:i}]=max_{t_{i}}v[T_{1:i-1},W_{1:i-1}]\times P(t_{i}|t_{i-1})\time
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/07/29/What gonna happen next/" rel="next" title="What gonna happen next?">
-                <i class="fa fa-chevron-left"></i> What gonna happen next?
+              <a href="/2018/09/12/Syntax Tree And CKY Parser/" rel="next" title="Syntax Tree And CKY Parser [CS544 USC]">
+                <i class="fa fa-chevron-left"></i> Syntax Tree And CKY Parser [CS544 USC]
               </a>
             
           </div>
@@ -392,10 +494,6 @@ v[T_{1:i},W_{1:i}]=max_{t_{i}}v[T_{1:i-1},W_{1:i-1}]\times P(t_{i}|t_{i-1})\time
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/09/12/Syntax Tree And CKY Parser/" rel="prev" title="Syntax Tree And CKY Parser [CS544 USC]">
-                Syntax Tree And CKY Parser [CS544 USC] <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -533,7 +631,7 @@ v[T_{1:i},W_{1:i}]=max_{t_{i}}v[T_{1:i-1},W_{1:i-1}]\times P(t_{i}|t_{i-1})\time
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#POS-Tag"><span class="nav-number">1.</span> <span class="nav-text">POS Tag</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Different-Sets-of-POS-Tags"><span class="nav-number">2.</span> <span class="nav-text">Different Sets of POS Tags</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Modeling-POS-Tagging-with-HMM-1"><span class="nav-number">3.</span> <span class="nav-text">Modeling POS Tagging with HMM[1]</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Generative-V-S-discriminative-models"><span class="nav-number">1.</span> <span class="nav-text">Generative V.S. discriminative models</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Independent-Classifiers"><span class="nav-number">2.</span> <span class="nav-text">Independent Classifiers</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hidden-Markove-models-HMMs"><span class="nav-number">3.</span> <span class="nav-text">Hidden Markove models (HMMs)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Maximunm-entropy-Markov-models-MEMMs"><span class="nav-number">4.</span> <span class="nav-text">Maximunm entropy Markov models (MEMMs)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Conditional-Random-Field-CRF"><span class="nav-number">4.1.</span> <span class="nav-text">Conditional Random Field (CRF)</span></a></li></ol></li></ol></div>
             
 
           </div>

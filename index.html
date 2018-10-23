@@ -258,6 +258,247 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/10/20/ner/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/myavatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/10/20/ner/" itemprop="url">Name Entity Recognition [CS544 USC]</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-20T10:32:26-07:00">
+                2018-10-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>Definition of NER task: to indentify all mentions of named entities (people, organizations, locations, etc.). Such a task can be boiling down to a <strong>sequence tagging problem</strong> (given a sequence of tokens, output a sequence of corresponding labels). </p>
+<p>In this post, I am going to introduce three ways to model and complete this task, and understand intrinsic relation and difference among these methods.</p>
+<h1 id="Generative-V-S-discriminative-models"><a href="#Generative-V-S-discriminative-models" class="headerlink" title="Generative V.S. discriminative models"></a>Generative V.S. discriminative models</h1><p>Referenced paper: <a href="http://robotics.stanford.edu/%7Eang/papers/nips01-discriminativegenerative.pdf" target="_blank" rel="noopener">2001, Andrew Y. Ng and Michale I. Jordan</a></p>
+<p>Before looking into detailed algorithms , we need to figure out two categories of models which those algorithms are based on. First, I am going to list relations and differences between generative and discrominative model directly. Then I will provide an example to help you understand this stuff intuitively.</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Generative model</th>
+<th>Discriminative model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Difference</td>
+<td>Model the joint probability of label <strong>y</strong> and sample <strong>x</strong>, i.e. <strong>P(x,y)</strong></td>
+<td>Model the conditional probability of label <strong>y</strong> and sample <strong>x</strong></td>
+</tr>
+<tr>
+<td>Relation</td>
+<td>Can get discriminative model by using Bayes formular from generative model</td>
+<td>Not the opposite</td>
+</tr>
+<tr>
+<td>Feature</td>
+<td><strong>1)</strong> Contain more infornation inside the model than discriminative model; <strong>2)</strong> Can be used in unsupervised learning; <strong>3)</strong> Is competible with online learning method and missing data situation;</td>
+<td><strong>1)</strong> Need labeled data and suitabe for (semi-)supervised learning; <strong>2)</strong> Easier to train and can get better performance in classification tasks in general. <strong>3)</strong> It is free to design features; <strong>4)</strong> Cannot give a full picture of the whole training data; <strong>5)</strong> Black box</td>
+</tr>
+<tr>
+<td>Example</td>
+<td>Naive bayes; HMMs; Markov random fields, etc.</td>
+<td>Logistic regression; SVMs; Neural networks; Conditional random fields, etc.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Example:</p>
+<p>Suppose we have following training data <code>(1,0), (1,0), (2,0), (2,1)</code>.</p>
+<p>Generative model learns joint probability distribution $P(x,y)$ form it:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>y = 0</th>
+<th>y = 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x = 1</td>
+<td>1/2</td>
+<td>0</td>
+</tr>
+<tr>
+<td>x = 2</td>
+<td>1/4</td>
+<td>1/4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Discriminative model learns conditional probability distribution $P(y|x)$ from it: </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>y = 0</th>
+<th>y = 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x = 1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>x = 2</td>
+<td>1/2</td>
+<td>1/2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The distribution $P(y|x)$ is the natural distribution for classifying a given sample $x$ into a class $y$, which is why algorithms that model this directly are called discriminative algorithms. Generative algorithms model $P(x,y)$, which can be tranformed into $P(y|x)$ by applying Bayes rule and then used for classification. However, the distribution $P(x,y)$ can also be used for other purposes because it provides a full picture of the whole training set. For example you could use $p(x,y)$ to generate likely $(x,y)$ pairs.</p>
+<h1 id="Independent-Classifiers"><a href="#Independent-Classifiers" class="headerlink" title="Independent Classifiers"></a>Independent Classifiers</h1><p>$t$ is the tag sequence to be predicted. $w$ is given word sequence. We want to model $P(t|w)$ and do prediction based on this ($argmax_{\mathbf{t}}P(\mathbf{t}|\mathbf{w})$). Same do other following models.</p>
+<script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=\Pi_{i}P(t_i|\mathbf{w})</script><h1 id="Hidden-Markove-models-HMMs"><a href="#Hidden-Markove-models-HMMs" class="headerlink" title="Hidden Markove models (HMMs)"></a>Hidden Markove models (HMMs)</h1><script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=\Pi_{i}P(w_i|t_i)P(t_i|t_{i-1})</script><img src="/2018/10/20/ner/hmm.jpg">
+<p>A brief deriving process is showed below:</p>
+<script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=P(\mathbf{w},\mathbf{t})/P(\mathbf{w})\propto P(\mathbf{w},\mathbf{t})=P(\mathbf{w}|\mathbf{t})P(\mathbf{t})=\Pi_{i}P(w_i|t_i)P(t_i|t_{i-1})</script><p>It is easy to know what we model here is the joint probability distribution $P(w,t)$. Therefore, <strong>HMM is a generative model</strong>. </p>
+<p>The last step is because 2 assuptions. And the algorithm to find optimal $t$ to maximize $P(t|w)$ is <strong>Viterbi algorithm</strong>. Detailed infomation of the 2 assuptions and implement of the algorithm can be found <a href="http://wangyp.tech/2018/09/08/POS%20tag%20&amp;%20HMM/">here</a>.</p>
+<h1 id="Maximunm-entropy-Markov-models-MEMMs"><a href="#Maximunm-entropy-Markov-models-MEMMs" class="headerlink" title="Maximunm entropy Markov models (MEMMs)"></a>Maximunm entropy Markov models (MEMMs)</h1><script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=\Pi_{i}P(t_i|w_i,t_{i-1})</script><img src="/2018/10/20/ner/memm.jpg"> 
+<p>What we model here is conditional probability distribution $P(t|w)$. Therefore, MEMM is a discriminative model.</p>
+<p>Now, lets parameterize it:</p>
+<script type="math/tex; mode=display">
+P(t_i|w_i,t_{i-1})=softmax(\mathbf{S})_{i}</script><script type="math/tex; mode=display">
+\mathbf{S}_i=s(t_i,t_{i-1},w_i)</script><script type="math/tex; mode=display">
+s(t_i,t_{i-1},w_i)=\sum_{k}\lambda_kf_k(t_i,t_{i-1},w_i)</script><p>Where:</p>
+<ul>
+<li>$f_k$ is <strong>feature function</strong> (can be disigned freely, like emission-like feature, transition-like feature, etc.).</li>
+<li>$\lambda$ is <strong>weight</strong> associated with each specific type of feature. </li>
+<li>$s()$ is <strong>score function</strong>.</li>
+<li>S is the vector consisting of all scores.</li>
+<li>Nomalize S using softmax function then get the probability we want.</li>
+</ul>
+<p><strong>More about MEMMS</strong></p>
+<p>Emission features can go across multiple observations. It is especially usefule for shallow parsing and NER tasks.</p>
+<script type="math/tex; mode=display">
+s(t_i,t_{i-1},w_i)=\sum_k\lambda_kf_k(t_i,t_{i-1},\mathbf{w})</script><img src="/2018/10/20/ner/memm2.jpg">
+<p>[Does it has any relation with attention mechanism?]</p>
+<h2 id="Conditional-Random-Field-CRF"><a href="#Conditional-Random-Field-CRF" class="headerlink" title="Conditional Random Field (CRF)"></a>Conditional Random Field (CRF)</h2><p>In MEMMs, we only consider the dependency among <script type="math/tex">t_{i}</script>,  <script type="math/tex">t_{i-1}</script>,  <script type="math/tex">\mathbf{w}</script>. But in some cases, like <strong>Label biased problem</strong>. Therefore, we want to model global dependency. This is the intuition of CRF.</p>
+<script type="math/tex; mode=display">
+P(\mathbf{t}|\mathbf{w})=\frac{S(\mathbf{t},\mathbf{w})}{\sum_{\mathbf{t}^\prime}\exp S(\mathbf{t}^{\prime},\mathbf{w})}</script><script type="math/tex; mode=display">
+S(\mathbf{t},\mathbf{w})=\sum_i(\sum_k\lambda_kf_k(t_i,\mathbf{w}))+\sum_l\gamma_lg_l(t_i,t_{i-1},\mathbf{w}))</script><img src="/2018/10/20/ner/crf.jpg">
+<p>Normalize globally, and score entire sequence directly.</p>
+<p>What we model here is conditional probability distribution $P(t|w)$. Therefore, CRF is a discriminative model.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/09/12/Syntax Tree And CKY Parser/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -932,194 +1173,6 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/06/LeakGAN/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wang Yipeng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/myavatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yipeng's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/06/LeakGAN/" itemprop="url">LeakGAN - a Long Text Generating Model</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-06T05:07:34-07:00">
-                2018-07-06
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>LeakGAN is a strengthen version of SeqGAN. Instead of using reward form Discriminator to train generator, LeakGAN add high-level feature (leaked information) extracted by CNN in Discriminator into the training of Generator, which greatly improve the performance of generating long text. Some other tricks are also included in the experioment of LeakGAN aiming to solving some problems showed in SeqGAN. </p>
-<h1 id="Core-problem-—-Long-text-generating"><a href="#Core-problem-—-Long-text-generating" class="headerlink" title="Core problem — Long text generating"></a>Core problem — Long text generating</h1><p>In my previous experiment of SeqGAN, some generating results are shown bellow:</p>
-<ul>
-<li>: ( data is stored in internal server and can not be fetched out</li>
-</ul>
-<p>From the examples above, we can find the result is very bad. It mainly because:</p>
-<ol>
-<li>Information contained in Reward is not enough for generating long test.</li>
-<li>LSTM used in Generator is not capable to form long-term memory.</li>
-</ol>
-<p>To solve the 1st problem, LeakGAN uses feature map outputted by Discriminator’s CNN-Maxpooling layer as leaked information to train Manager to generate goal vectors. Then, Worker uses goal vectors and Discriminator’s reward together to generate sequences.</p>
-<h2 id="Model-structure"><a href="#Model-structure" class="headerlink" title="Model structure"></a>Model structure</h2><img src="/2018/07/06/LeakGAN/model_structure.jpg">
-<p><strong>Discriminator-Feature Extractor CNN</strong></p>
-<script type="math/tex; mode=display">f_t=\digamma(S_t; \phi_f)</script><p><strong>Generator-Manager LSTM</strong></p>
-<script type="math/tex; mode=display">\hat{g_t}, h^m_t=M(f_t, h^m_{t-1}; \theta_m)</script><script type="math/tex; mode=display">g_t=\hat{g_t}/||\hat{g_t}||</script><script type="math/tex; mode=display">w_t=W_{\psi}(\sum^c_{i=1}g_{t-i})</script><p><strong>Generator-Worker LSTM</strong></p>
-<script type="math/tex; mode=display">O_t, h_t^{w}=W(x_t, h^w_{t-1}; \theta_w)</script><script type="math/tex; mode=display">G_{\theta}(x_{t+1}|s_t)=softmax(O_t\centerdot w_t/\alpha)</script><h2 id="Model-training"><a href="#Model-training" class="headerlink" title="Model training"></a>Model training</h2><h3 id="Generator-training"><a href="#Generator-training" class="headerlink" title="Generator training"></a>Generator training</h3><p>Manager and Worker are trained alternatively. One should be fixed when the other is in training. Manager is trained to generate advantageous directions. Worker is trained to follow the directions.</p>
-<p><strong>Gradient of Manager <script type="math/tex">\nabla_{\theta_m}g_t</script></strong></p>
-<ul>
-<li><p><em>Expected reward under current policy</em></p>
-<script type="math/tex; mode=display">E[r_t]=Q(f_t, g_t)=Q_F(s_t, g_t)</script></li>
-<li><p><em>Cosine similarity between change of feature representation and goal vector</em></p>
-<script type="math/tex; mode=display">d_{cos}(f_{t+c}-f_t, g_t(\theta_m))</script></li>
-<li><p><em>Policy gradient</em></p>
-<script type="math/tex; mode=display">\nabla_{\theta_m}g_t=-Q_F(s_t, g_t)\nabla_{\theta_m}d_{cos}(f_{t+c}-f_t, g_t(\theta_m))</script></li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">self.goal_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(self.reward,</span><br><span class="line">                <span class="number">1</span>-tf.losses.cosine_distance(</span><br><span class="line">                  	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">                  	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>), </span><br><span class="line">                  	<span class="number">2</span></span><br><span class="line">                )</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size / self.step_size)</span><br></pre></td></tr></table></figure>
-<p><strong>Gradient of Worker</strong></p>
-<ul>
-<li><p><em>Intrinsic reward</em></p>
-<script type="math/tex; mode=display">r^I_t=\frac{1}{c}\sum^c_{i=1}d_{cos}(f_t-f_{t-i}, g_{t-i})</script></li>
-</ul>
-<ul>
-<li><p><em>Expected intrinsic reward over all possible actions</em></p>
-<script type="math/tex; mode=display">\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)</script></li>
-<li><p><em>Expected intrinsic reward over all possible actions &amp; all current states</em></p>
-<script type="math/tex; mode=display">E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)]</script></li>
-<li><p><em>Policy gradient</em></p>
-<script type="math/tex; mode=display">\nabla_{\theta_w}E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW(x_t|s_{t-1}; \theta_w)]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G}[\sum_{x_t}r^I_t\nabla_{\theta_w}W]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G}[\sum_{x_t}r^I_tW\frac{\nabla_{\theta_w}W}{W}]</script><script type="math/tex; mode=display">=E_{s_{t-1}\sim G, x_t\sim W}[r^I_t\nabla_{\theta_w}logW]</script></li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">self.Worker_Reward = <span class="number">1</span>-tf.losses.cosine_distance(tf.nn.l2_normalize(self.all_sub_features,<span class="number">2</span>),</span><br><span class="line">                                                 tf.nn.l2_normalize(self.all_sub_goals,<span class="number">2</span>), </span><br><span class="line">                                                 <span class="number">2</span>)</span><br><span class="line">self.worker_loss = -tf.reduce_sum(</span><br><span class="line">  	tf.multiply(</span><br><span class="line">      	self.Worker_Reward,</span><br><span class="line">      	tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>) * \</span><br><span class="line">      	tf.log(tf.clip_by_value(tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), <span class="number">1e-20</span>, <span class="number">1.0</span>))</span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
-<p><strong>Pretraining of Manager</strong></p>
-<p>Using real text,</p>
-<script type="math/tex; mode=display">\hat{f_t}=F(\hat{s_t})</script><script type="math/tex; mode=display">\nabla^{pre}_{\theta_m}g_t = -\nabla_{\theta_m}d_{cos}(\hat{f_{t+c}}-\hat{f_t}, g_t(\theta_m))</script><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sub_feature = tf.cond(i % step_size &gt; <span class="number">0</span>, </span><br><span class="line">                      <span class="keyword">lambda</span>: sub_feature,</span><br><span class="line">                      <span class="keyword">lambda</span>: tf.cond(i &gt; <span class="number">0</span>, </span><br><span class="line">                                      <span class="keyword">lambda</span>:sub_feature.write(i/step_size<span class="number">-1</span>,tf.subtract(feature,feature_array.read(i - step_size))),</span><br><span class="line">                    				  <span class="keyword">lambda</span>: sub_feature</span><br><span class="line">                                     )</span><br><span class="line">                     )</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.sub_feature = self.sub_feature.stack() <span class="comment"># seq_length x batch_size x num_filter</span></span><br><span class="line">self.sub_feature = tf.transpose(self.sub_feature, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.real_goal_array = self.real_goal_array.stack()</span><br><span class="line">self.real_goal_array = tf.transpose(self.real_goal_array, perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.pretrain_goal_loss = -tf.reduce_sum(</span><br><span class="line">	<span class="number">1</span> - tf.losses.cosine_distance(</span><br><span class="line">    	tf.nn.l2_normalize(self.sub_feature,<span class="number">2</span>),</span><br><span class="line">      	tf.nn.l2_normalize(self.real_goal_array,<span class="number">2</span>),</span><br><span class="line">		<span class="number">2</span></span><br><span class="line">    )</span><br><span class="line">) / (self.sequence_length * self.batch_size/self.step_size)</span><br></pre></td></tr></table></figure>
-<p><strong>Pretraining of Worker</strong></p>
-<p><em>MLE</em></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">g_predictions = tf.cond(</span><br><span class="line">                i&gt;<span class="number">0</span>,</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions.write(i<span class="number">-1</span>, tf.nn.softmax(x_logits)),</span><br><span class="line">                <span class="keyword">lambda</span> :g_predictions)</span><br><span class="line"><span class="string">"""Pretrain loop..."""</span></span><br><span class="line">self.g_predictions = tf.transpose(self.g_predictions.stack(), perm=[<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>])</span><br><span class="line">self.cross_entropy = tf.reduce_sum(</span><br><span class="line">  		self.g_predictions * tf.log(tf.clip_by_value(self.g_predictions, <span class="number">1e-20</span>, <span class="number">1.0</span>))</span><br><span class="line">	) / (self.batch_size * self.sequence_length * self.vocab_size)</span><br><span class="line">self.pretrain_worker_loss = -tf.reduce_sum(</span><br><span class="line">  		tf.one_hot(tf.to_int32(tf.reshape(self.x, [<span class="number">-1</span>])), self.vocab_size, <span class="number">1.0</span>, <span class="number">0.0</span>)* \</span><br><span class="line">  		tf.log(tf.clip_by_value(</span><br><span class="line">        	tf.reshape(self.g_predictions, [<span class="number">-1</span>, self.vocab_size]), </span><br><span class="line">          	<span class="number">1e-20</span>, <span class="number">1.0</span>)</span><br><span class="line">        )</span><br><span class="line">	) / (self.sequence_length * self.batch_size)</span><br></pre></td></tr></table></figure>
-<h3 id="Discriminator-Training"><a href="#Discriminator-Training" class="headerlink" title="Discriminator Training"></a>Discriminator Training</h3><p><strong>Pretraining</strong></p>
-<p>Adam gradient descent with cross entropy loss </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">'D_update'</span>):</span><br><span class="line">	self.D_l2_loss = tf.constant(<span class="number">0.0</span>)</span><br><span class="line">	self.FeatureExtractor_unit = self.FeatureExtractor()</span><br><span class="line">    <span class="comment"># Train for Discriminator</span></span><br><span class="line">    <span class="keyword">with</span> tf.variable_scope(<span class="string">"feature"</span>) <span class="keyword">as</span> self.feature_scope:</span><br><span class="line">    	D_feature = self.FeatureExtractor_unit(self.D_input_x,</span><br><span class="line">                                               self.dropout_keep_prob)</span><br><span class="line">        self.feature_scope.reuse_variables()</span><br><span class="line">    D_scores, D_predictions,self.ypred_for_auc = self.classification(D_feature)</span><br><span class="line">    losses = tf.nn.softmax_cross_entropy_with_logits(logits=D_scores, </span><br><span class="line">                                                     labels=self.D_input_y)</span><br><span class="line">    self.D_loss = tf.reduce_mean(losses) + self.l2_reg_lambda * self.D_l2_loss</span><br><span class="line">    self.D_params = [param <span class="keyword">for</span> param <span class="keyword">in</span> tf.trainable_variables() \ </span><br><span class="line">                     <span class="keyword">if</span> <span class="string">'Discriminator'</span> <span class="keyword">or</span> <span class="string">'FeatureExtractor'</span> <span class="keyword">in</span> param.name]</span><br><span class="line">    d_optimizer = tf.train.AdamOptimizer(<span class="number">5e-5</span>)</span><br><span class="line">    D_grads_and_vars = d_optimizer.compute_gradients(self.D_loss, </span><br><span class="line">                                                     self.D_params, </span><br><span class="line">                                                     aggregation_method=<span class="number">2</span>)</span><br><span class="line">    self.D_train_op = d_optimizer.apply_gradients(D_grads_and_vars)</span><br></pre></td></tr></table></figure>
-<hr>
-<h1 id="Problem-2-—-Gradient-Vanishing"><a href="#Problem-2-—-Gradient-Vanishing" class="headerlink" title="Problem 2 — Gradient Vanishing"></a>Problem 2 — Gradient Vanishing</h1><p>There will be a severe gradient vanishing problem during the training of GAN when D is much stronger than  G. The reward is too small to update the parameters in G. Therefore it needs to  be rescaled.</p>
-<p><strong>Trick — Bootstrapped Rescaled Activation</strong></p>
-<p>Reward matrix is <script type="math/tex">R_{B*T}</script> with batch-size B and sequence-length T.</p>
-<p>Rescale it by doing <script type="math/tex">R_{i,t} = \sigma(\delta\centerdot(0.5-\frac{rank(i)}{B}))</script>.</p>
-<ul>
-<li>Expectation and variance of the reward in each mini-batch are constant!</li>
-<li>In general, all ranking model can prevent the gradient vanishing problem (<a href="http://papers.nips.cc/paper/6908-adversarial-ranking-for-language-generation.pdf" target="_blank" rel="noopener">More explanation — RankGAN</a>).</li>
-</ul>
-<h1 id="Problem-3-—-Mode-Collapse"><a href="#Problem-3-—-Mode-Collapse" class="headerlink" title="Problem 3 — Mode Collapse"></a>Problem 3 — Mode Collapse</h1><p>These are several examples generated by SeqGAN I trained before:</p>
-<ul>
-<li>: ( data is stored in internal server and can not be fetched out</li>
-</ul>
-<p>As we can see, the generator is inclined to produce similar or  same sequences, which is called <strong>Mode Collapse</strong>. It is because… You can find more about mode collapse from <a href="https://www.quora.com/What-causes-mode-collapse-in-GANs" target="_blank" rel="noopener">Quora</a></p>
-<p><strong>Trick — Interleaved Training</strong></p>
-<p>Instead of using full GAN training (unsupervised), it adopt a MLE training (supervised) after 15 epochs of GAN training to prevent the Worker get into some bad local minimums.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> total_batch % <span class="number">15</span> == <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">for</span> epoch <span class="keyword">in</span> xrange(<span class="number">1</span>):</span><br><span class="line">    loss = pre_train_epoch(sess, leakgan, gen_data_loader)</span><br></pre></td></tr></table></figure>
-<h1 id="Problem-4-—-Balance-the-exploration-and-exploitation"><a href="#Problem-4-—-Balance-the-exploration-and-exploitation" class="headerlink" title="Problem 4* — Balance the exploration and exploitation"></a>Problem 4* — Balance the exploration and exploitation</h1><p><strong>Trick — Temperature Control</strong></p>
-<p>Higher temperature for training the model — exploration</p>
-<p>Lower temperature for generating samples — exploitation</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1173,7 +1226,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">posts</span>
               </a>
             </div>
