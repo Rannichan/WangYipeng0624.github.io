@@ -258,6 +258,170 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2019/01/05/Transformer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wang Yipeng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/myavatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yipeng's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/05/Transformer/" itemprop="url">Attention and Transformer</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-05T21:16:24-08:00">
+                2019-01-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>Today, I am going to introduce a very interesting paper from Google. You can find the original paper “Attention is All You Need” on the <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">website</a>. In this paper, genius aithors propose new sequence transduction model totally based on attention, called <strong>Transformer</strong>. This model outperforms many previous model based on RNNs, CNNs and shows <strong>attention machenism</strong>‘s importance in modeling sequence.  </p>
+<h1 id="Review"><a href="#Review" class="headerlink" title="Review"></a>Review</h1><p><em>Keyword : RNN, LSTM, GRU, Long-term dependency, Parallel Computing.</em></p>
+<p>Before talking about attention and transformer, I would first have look of RNNs, LSTMs, GRUs and what they are good at and what not. RNN (recurrent neural network) was proposed to model sequence input. It can capture the relation between current input and the previous input. It is a kind of imitation of the nature that human form a sentence from left to right (jsut an assumption, how human generate a sentence must be more complicated). However, RNN still has drawbacks. Because of the recurrent structure of RNN, the gradient (when we using gradient descent to train an RNN) is easy to vanish or explode after several time steps (recurrences). This is what LSTMs and GRUs want to solve. Upon the original version of RNN, They introduce a structure called <strong>“GATE”</strong> to control the “forget” (of previous input) and “remember” (of current input). Gradient is not that easy to vanish or explode when traning LSTMs and GRUs. Therefore, LSTMs and GRUs can capture long-term dependency and work better than orginal RNN when modeling long sequences. But LSTMs and GRUs are still not perfect. In classic encoder-decoder models, people like to use LSTMs and GRUs to encode input sequence into a fixed-length vector. However, It is very difficult for LSTMs or GRUs to capture enough information of a sequence. </p>
+<blockquote>
+<p>A potential issue with this encoder–decoder approach is that a neural network needs to be able to<br>compress all the necessary information of a source sentence into a fixed-length vector. This may<br>make it difficult for the neural network to cope with long sentences, especially those that are longer<br>than the sentences in the training corpus.    </p>
+<p><a href="https://arxiv.org/pdf/1409.0473.pdf" target="_blank" rel="noopener">Dzmitry Bahdanau, et al. Neural machine translation by jointly learning to align and translate, 2015</a> </p>
+</blockquote>
+<p><strong>Attention machenism allow decoder to directly look into source sequence, thereby solving the problem of no enough information.</strong></p>
+<p>Another disadvantage of RNN (including LSTM, GRU) is its sequential nature preclude parallelization within training. Same case of encoder-decoder model, if we want to make the training parallelizable but don’t build encoder and decoder using RNNs, what we could use? A powerful weapon is Self-Attention. <strong>Self-Attention can capture inter-denpendncy within a sequence, meanwhile, most computing during training is parallelizable.</strong> </p>
+<h1 id="Attention-Machenism"><a href="#Attention-Machenism" class="headerlink" title="Attention Machenism"></a>Attention Machenism</h1><p>In general, </p>
+<blockquote>
+<p>An attention function can be described as mapping a <strong>query</strong> and a set of <strong>key-value pairs</strong> to an output, where the query, keys, values, and output are all vectors. The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a <strong>compatibility function</strong> of the<br>query with the corresponding key.</p>
+<p><a href="http://papers.nips.cc/paper/7181-attention-is-all-you-need" target="_blank" rel="noopener">Vaswani, Ashish, et al. “Attention is all you need.” <em>Advances in Neural Information Processing Systems</em>. 2017.</a></p>
+</blockquote>
+<p>In the case of encoder-decoder model, output of each decoder unit is a query, and output of each encoder unit is a key and corresponding value (here key and corresponding are exactly the same thing). The attention distribution over the encoder outputs describes how an output of decoder unit compatible with each part of encoder’s outputs. Then decoder could directly gather information from encoder’s outputs by computing weighted sum of them, where the weight comes from the attention distribution.</p>
+<img src="/2019/01/05/Transformer/1.jpg">
+<p>If we want to apply attention machenism in our models, we need to determine <strong>WHERE</strong> and <strong>HOW</strong>. WHERE means ‘from what queries to what keys’ and we are going to talk about it in the next section. HOW means ‘how to compute compatibility between queries and keys’. And this paper mentioned 4 ways:</p>
+<ul>
+<li><p><strong>Dot-product attention</strong>: Simply compute dot products of a query with all keys, and apply a softmax function to obtain weights on the values.</p>
+</li>
+<li><p><strong>Scaled dot-product attention</strong>: Queries and keys are of dimension $d_k$. First compute dot products of a query with all keys, and devide each by $\sqrt{d_k}$. Then apply a softmax function to obtain weights on the values.</p>
+<script type="math/tex; mode=display">
+Attention(Q,K,V)=softmax(QK^T/\sqrt{d_k})V</script></li>
+<li><p><strong>Multi-head attention</strong>: Use several learned projection layer to project a set of queries, keys, values into different subspaces. Then apply Scaled dot-product attention on the set of queries, keys, values in each different subspace. Concatenate all attention outputs in different subspaces. At last  use a projection layer to project the concatenation result into the dimension we want.</p>
+<script type="math/tex; mode=display">
+MultiHead(Q,K,V) = Concat(head_1, head_2, ..., head_h)W^O</script><script type="math/tex; mode=display">
+head_i=Attention(QW_i^Q, KW_i^K, VW_i^V)</script><script type="math/tex; mode=display">
+W_i^Q, W_i^K \in R^{d_{model}\times d_{k}}, W_i^Q \in R^{d_{model}\times d_{v}}, W^O \in R^{hd_{v}\times d_{model}}</script></li>
+</ul>
+<ul>
+<li><strong>Additive attention</strong>: Compute the compatibility function using a feed-forward network with a single hidden layer.</li>
+</ul>
+<p>Scaled dot-product attention and Multi-head attention were adopted at last to build Transformer. Authors briefly explained why they did this in the paper. But I will not focus on it in this blog post. </p>
+<h1 id="Transformer"><a href="#Transformer" class="headerlink" title="Transformer"></a>Transformer</h1><p>Trasformer is a sequence transduction model completely based on attention machenism. There is not any sequencial structure when building transformer. Therefore, transformer can capture and make most use of the information within input sequence, and can be trained more efficiently than other sequence transduction models based on RNNs.</p>
+<h2 id="Model-structure"><a href="#Model-structure" class="headerlink" title="Model structure"></a>Model structure</h2><p>Transformer is still of encoder-decoder structure, and consists of an encoder and a decoder.</p>
+<p><strong>Encoder</strong> is composed of a stack of N (=6) identical encoder units. Each encoder unit contains 2 sublayers. The first sublayer is a multi-head self-attention layer. The second is a fully-connected layer. Additionally, a residual connection was applyed around each sublayer, followed by layer normalization. </p>
+<img src="/2019/01/05/Transformer/2.jpg">
+<p><strong>Decoder</strong> is composed of a stack of N (=6) identical decoder units. Each decoder unit contains 3 sublayers. The first sublayer is a masked multi-head self-attention layer (almost same with the self-attention layer in encoder, but prevent current position from attending to subsequent positions). The second layer is a multi-head attention over the output of corresponding encoder stack. The third layer is a fully-connected layer. And a residual connection was around  each sublayer, followed by layer normalization.  </p>
+<img src="/2019/01/05/Transformer/3.jpg">
+<img src="/2019/01/05/Transformer/4.jpg">
+<h2 id="Attention-in-transformer"><a href="#Attention-in-transformer" class="headerlink" title="Attention in transformer"></a>Attention in transformer</h2><p>By checking the overall structure of transformer, we can find attention machenism were used in 3 different places in total. They are self-attention inside encoder, attention from encoder to decoder, and self-attention inside decoder. </p>
+<p><strong>For self-attention inside encoder</strong>, Queries, Keys and Values are just the output of previous encoder unit.</p>
+<p><strong>For attention from encoder to decoder</strong>, Queries are the output of previous decoder unit. Keys and Values are the output of the encoder.</p>
+<p><strong>For self-attention inside decoder</strong>, Queries, Keys and Values are the output of previous decoder unit. But for each position, when computing weighted sum of values, weights corresponding with subsequent positions’ value will be masked out to <strong>prevent leftward information flow in the decoder</strong> (to preserve the auto-regressive property?). </p>
+<h1 id="Something-else-to-say"><a href="#Something-else-to-say" class="headerlink" title="Something else to say"></a>Something else to say</h1><p>Attention is really a useful tool to build our models. It provides a high way for the flow of information and can capture rich dependence features in a sequence. Transformer is a good transduction model with performance and efficiency. It could be an important module when building models for other tasks. This is also what I want to talk in the next post (next post will be related with <strong>BERT</strong>) </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/10/20/ner/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -962,217 +1126,6 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-tags" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wangyp.tech/2018/07/25/NarrativeChains/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wang Yipeng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/myavatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Yipeng's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/25/NarrativeChains/" itemprop="url">Narrative Event Chains</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-25T16:42:29-07:00">
-                2018-07-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h1><p>We can always break a narrative into some events, for example:</p>
-<p>given a narrative  <em><strong>“John entered the restaurant. He sat down, and ordered a meal. He ate…”</strong></em></p>
-<p>it can breaks into events looks like</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">enter =&gt; sit =&gt; order =&gt; eat</span><br></pre></td></tr></table></figure>
-<p>By doing a simple statistic, we can simply abstract some valuable information of the narrative like:</p>
-<p> <strong><em>Given a current event-A, how much is event-B likely to occur next?</em></strong></p>
-<p>But this is not informative enough,<del>and too much of verbs barely exceed chance performance</del>!</p>
-<h1 id="Insight"><a href="#Insight" class="headerlink" title="Insight"></a>Insight</h1><p>Don’t look at all verbs, just focus on those mentioning the “key actor” —  <em><strong>protagonist</strong></em></p>
-<p>Instead of using verbs only, but pair verbs with their protagonist.</p>
-<h1 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h1><p>In total, our task is to extract events that  constitute <em><strong>narrative chains</strong></em></p>
-<ul>
-<li><em><strong>Narrative chain</strong></em> is a <em><strong>partially ordered</strong></em> set of <em><strong>narrative events</strong></em></li>
-<li><em><strong>Narrative event</strong></em> is a tuple of  <em><strong>“event” </strong></em> and <em><strong>“participants” </strong></em></li>
-<li><em><strong>Partially ordering</strong></em> means some narrative event is <em><strong>before</strong></em> another one</li>
-<li>In our circumstance, the “event” is represented as a <em><strong>verb</strong></em>, the “participants” is represented as a <em><strong>typed dependency</strong></em> </li>
-</ul>
-<p>If we use <script type="math/tex">e_i=(verb, dependency)</script> to denote a narrative event,</p>
-<p>the narrative chain should be <script type="math/tex">\{e_1, e_2, ..., e_n\}</script></p>
-<p>$B(e_i, e_j) = True$ if <script type="math/tex">e_i</script> occurs strictly before <script type="math/tex">e_j</script></p>
-<h2 id="Stage-1-Learning-narrative-relations"><a href="#Stage-1-Learning-narrative-relations" class="headerlink" title="Stage 1 Learning narrative relations"></a>Stage 1 Learning narrative relations</h2><p><em><strong>Unsupervised cluster</strong></em></p>
-<ol>
-<li><p><strong>Pairwise relations between events</strong></p>
-<p>Given a list of observed <em><strong>narrative events</strong></em>, we can approximate the <em><strong>point-wise mutual information (PMI)</strong></em> by:</p>
-<script type="math/tex; mode=display">prob[(verb_i, X)AND(verb_j, X)]=\frac{num_X[(verb_i, X)AND(verb_j, X)]}{sum_{i,j}\{num_X[(verb_i, X)AND(verb_j, X)]\}}</script><script type="math/tex; mode=display">PMI[(verb_i, X), (verb_j, X)]=log\frac{prob[(verb_i, X) AND(verb_j, X)]}{prob[(verb_i, X)]prob[(verb_j, X)]}</script><p><em><strong>PMI</strong></em> describes: given a event (with a argument), how “unusual” to see another event even (with the same argument)</p>
-</li>
-<li><p><strong>Global narrative score</strong></p>
-<p>Given all narrative events in a document, we can find next most likely event to occur by maximizing:</p>
-<script type="math/tex; mode=display">max_{0<j<m}\sum^n_{i=0}PMI(e_i, f_j)</script><p><em><strong>n</strong></em> is the number of given events in our chain, and <em><strong>m</strong></em> is the number of events in our training corpus.</p>
-<p>Such a <em><strong>global narrative score</strong></em> describes: given n events (with a argument), how “unusual” to see another event even (with the same argument)</p>
-<p><strong>[Example]</strong></p>
-<p>Three narrative events and the six most likely events to include in the same chain (actually, is set, because it is not ordering now)</p>
-<blockquote>
-<p>   <strong>Known events</strong></p>
-<p>   (pleaded subj)</p>
-<p>   (admits subj)</p>
-<p>   (convicted obj)</p>
-<p>   <strong>Likely events</strong></p>
-<p>   (sentenced obj) 0.89</p>
-<p>   (paroled obj) 0.76</p>
-<p>   (fired obj) 0.75</p>
-<p>   (indicted obj) 0.74</p>
-<p>   (fined obj) 0.73</p>
-<p>   (denied subj) 0.73</p>
-</blockquote>
-</li>
-<li><p><strong>Evaluation</strong></p>
-<p><em><strong>Narrative cloze</strong></em> is a sequence of narrative events in a document, from which <em><strong>one event</strong></em> has been removed, the task is to <em><strong>predict the missing (verb, typed dependency)</strong></em> </p>
-<p><strong>[Example]</strong></p>
-<p>Given a document and focus <em><strong>McCann</strong></em> as protagonist:</p>
-<blockquote>
-<p><em><strong>McCann</strong></em> <em>threw</em> two interceptions early.</p>
-<p>Toledo <em>pulled</em> <strong><em>McCann</em></strong> aside and <em>told</em> <strong><em>him</em></strong> <strong><em>he’d</em></strong> <em>start</em>.</p>
-<p><strong><em>McCann</em></strong> quickly <em>completed</em> his first two passes.</p>
-</blockquote>
-<p>We got five events:</p>
-<blockquote>
-<p>(threw subj)</p>
-<p>(pulled obj)</p>
-<p>(told obj)</p>
-<p>(start subj)</p>
-<p>(completed subj) </p>
-</blockquote>
-<p>We remove the first one <strong><em>(threw subj)</em></strong> and use the remaining four events to rank the missing event (chosen from extra <strong><em>training data</em></strong>)</p>
-</li>
-</ol>
-<h2 id="Stage-2-Ordering-narrative-events"><a href="#Stage-2-Ordering-narrative-events" class="headerlink" title="Stage 2 Ordering narrative events"></a>Stage 2 Ordering narrative events</h2><p><em><strong>Supervised classification</strong></em></p>
-<p>class 1. <strong><em>before</em></strong></p>
-<p>class 2. <strong><em>other</em></strong></p>
-<p>Each pair of <strong><em>narrative events</em></strong> in a document that share a coreferring argument is treated as a separate classification task.</p>
-<p>We count the number of labeled <strong><em>before</em></strong> relations between each <strong><em>narrative event</em></strong>.</p>
-<p>Then build a database of such a count.</p>
-<p>We can measure the <strong><em>confidence</em></strong> of <strong><em>“event-X before event-Y”</em></strong> by looking up the database and compute <script type="math/tex">num(B(X, Y)=True)/num(B(Y, X)=True)</script></p>
-<p><strong>[Evaluation]</strong></p>
-<p>Given a set of narrative events: </p>
-<ul>
-<li><strong>Chain 1:</strong> These events are hand-labeled for a partial ordering </li>
-<li><strong>Chain 2:</strong> These events are sorted in random order</li>
-</ul>
-<p>We gonna to decide which of these two chains is more coherent.</p>
-<p>To to this, we need to introduce <strong><em>coherence score</em></strong>.</p>
-<p><strong><em>Coherence score</em></strong> is the sum of all relations (edge in the graph) that our model agrees with. </p>
-<p>Every edge is weighted by its <strong><em>confidence</em></strong></p>
-<img src="/2018/07/25/NarrativeChains/example1.jpg">
-<p><strong>[*Notice]</strong></p>
-<p>In real practice, the mathematical definition of <em><strong>confidence</strong></em> will be more complex, but here I just simplify it to make it more understandable. Please check <a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">the original paper</a> for formal definition.  </p>
-<h2 id="Stage-3-Discrete-narrative-event-chains"><a href="#Stage-3-Discrete-narrative-event-chains" class="headerlink" title="Stage 3 Discrete narrative event chains"></a>Stage 3 Discrete narrative event chains</h2><p>Up to now, we have got <strong><em>narrative relations</em></strong> across all possible events and their <strong><em>temporal order</em></strong> (i.e. many partially ordered narrative event chains).</p>
-<p>But they are still discrete list and cannot reproduce explicit self-contained scripts.</p>
-<p>However, it is totally worthwhile to construct discrete narrative chains, because it can be used to check <strong><em>whether the combination of events learning and ordering has produced script-like structures</em></strong> </p>
-<p>And, to get a whole combination of events, we only need to apply a <strong><em>cluster algorithm</em></strong> over <strong><em>all events</em></strong> based on <strong><em>PMI score</em></strong> we got before, and use approach stated in stage 2 to extract “before” relation among them.</p>
-<img src="/2018/07/25/NarrativeChains/example2.jpg">
-<h1 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h1><p>This the very basic and important work in the area of NLP. It provides a new idea for “language generation”, “question answering”, “frame induction” and many other areas.</p>
-<p><a href="https://nlp.stanford.edu/pubs/narrative-chains08.pdf" target="_blank" rel="noopener">*original paper: “Unsupervised Learning of Narrative Event Chains”</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1226,7 +1179,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-count">10</span>
                 <span class="site-state-item-name">posts</span>
               </a>
             </div>
@@ -1239,7 +1192,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">tags</span>
               </a>
             </div>
@@ -1289,7 +1242,7 @@ s(c)=\frac{1}{n}\sum^{n-1}_{j=0}coh(c, e_j)</script><h1 id="Extra"><a href="#Ext
         <div class="copyright" >
   
   &copy; 
-  <span itemprop="copyrightYear">2018</span>
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
